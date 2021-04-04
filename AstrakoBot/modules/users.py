@@ -165,6 +165,10 @@ def __stats__():
     return f"• {sql.num_users()} users, across {sql.num_chats()} chats"
 
 
+def __gdpr__(user_id):
+    sql.del_user(user_id)
+
+
 def __migrate__(old_chat_id, new_chat_id):
     sql.migrate_chat(old_chat_id, new_chat_id)
 

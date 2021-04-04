@@ -11,6 +11,7 @@ from AstrakoBot.__main__ import (
     IMPORTED,
     MIGRATEABLE,
     STATS,
+    GDPR,
     USER_INFO,
     USER_SETTINGS,
 )
@@ -63,6 +64,9 @@ def load(update: Update, context: CallbackContext):
 
     if hasattr(imported_module, "__stats__"):
         STATS.append(imported_module)
+
+    if hasattr(imported_module, "__gdpr__"):
+        GDPR.append(imported_module)
 
     if hasattr(imported_module, "__user_info__"):
         USER_INFO.append(imported_module)
@@ -129,6 +133,9 @@ def unload(update: Update, context: CallbackContext):
 
     if hasattr(imported_module, "__stats__"):
         STATS.remove(imported_module)
+
+    if hasattr(imported_module, "__gdpr__"):
+        GDPR.append(imported_module)
 
     if hasattr(imported_module, "__user_info__"):
         USER_INFO.remove(imported_module)

@@ -7,8 +7,8 @@ from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.types import ChannelParticipantsAdmins
 from telethon import events
 
-from telegram import MAX_MESSAGE_LENGTH, ParseMode, Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram import MAX_MESSAGE_LENGTH, ParseMode, Update, MessageEntity
+from telegram.ext import CallbackContext, CommandHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.error import BadRequest
 from telegram.utils.helpers import escape_markdown, mention_html
@@ -23,7 +23,7 @@ from AstrakoBot import (
     dispatcher,
     sw,
 )
-from AstrakoBot.__main__ import STATS, TOKEN, USER_INFO
+from AstrakoBot.__main__ import STATS, GDPR, TOKEN, USER_INFO
 import AstrakoBot.modules.sql.userinfo_sql as sql
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.sql.global_bans_sql import is_user_gbanned
@@ -403,6 +403,21 @@ def set_about_bio(update: Update, context: CallbackContext):
         message.reply_text("Reply to someone to set their bio!")
 
 
+def gdpr(update: Update, context: CallbackContext):
+    update.effective_message.reply_text("Deleting identifiable data...")
+    for mod in GDPR:
+        mod.__gdpr__(update.effective_user.id)
+
+    update.effective_message.reply_text("Your personal data has been deleted.\n\nNote that this will not unban "
+                                        "you from any chats, as that is telegram data, not Marie data. "
+                                        "Flooding, warns, and gbans are also preserved, as of "
+                                        "[this](https://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/right-to-erasure/), "
+                                        "which clearly states that the right to erasure does not apply "
+                                        "\"for the performance of a task carried out in the public interest\", as is "
+                                        "the case for the aforementioned pieces of data.",
+                                        parse_mode=ParseMode.MARKDOWN)
+
+
 def __user_info__(user_id):
     bio = html.escape(sql.get_user_bio(user_id) or "")
     me = html.escape(sql.get_user_me_info(user_id) or "")
@@ -413,6 +428,11 @@ def __user_info__(user_id):
         result += f"<b>What others say:</b>\n{bio}\n"
     result = result.strip("\n")
     return result
+
+
+def __gdpr__(user_id):
+    sql.clear_user_info(user_id)
+    sql.clear_user_bio(user_id)
 
 
 __help__ = """
@@ -435,7 +455,10 @@ Examples:
  `/setbio This user is a wolf` (reply to the user)
 
 *Overall Information about you:*
- • `/info`*:* get information about a user. 
+ • `/info`*:* get information about a user.
+
+*Guide to the General Data Protection Regulation (GDPR):*
+ • `/gdpr`*:* deletes your information from the bot's database. Private chats only.
 """
 
 SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio, run_async=True)
@@ -445,6 +468,7 @@ STATS_HANDLER = CommandHandler("stats", stats, run_async=True)
 ID_HANDLER = DisableAbleCommandHandler("id", get_id, run_async=True)
 GIFID_HANDLER = DisableAbleCommandHandler("gifid", gifid, run_async=True)
 INFO_HANDLER = DisableAbleCommandHandler(("info", "book"), info, run_async=True)
+GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.chat_type.private, run_async=True)
 
 SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me, run_async=True)
 GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, run_async=True)
@@ -453,17 +477,19 @@ dispatcher.add_handler(STATS_HANDLER)
 dispatcher.add_handler(ID_HANDLER)
 dispatcher.add_handler(GIFID_HANDLER)
 dispatcher.add_handler(INFO_HANDLER)
+dispatcher.add_handler(GDPR_HANDLER)
 dispatcher.add_handler(SET_BIO_HANDLER)
 dispatcher.add_handler(GET_BIO_HANDLER)
 dispatcher.add_handler(SET_ABOUT_HANDLER)
 dispatcher.add_handler(GET_ABOUT_HANDLER)
 
 __mod_name__ = "Info"
-__command_list__ = ["setbio", "bio", "setme", "me", "info"]
+__command_list__ = ["setbio", "bio", "setme", "me", "info", "gprd"]
 __handlers__ = [
     ID_HANDLER,
     GIFID_HANDLER,
     INFO_HANDLER,
+    GDPR_HANDLER,
     SET_BIO_HANDLER,
     GET_BIO_HANDLER,
     SET_ABOUT_HANDLER,
