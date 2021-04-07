@@ -88,7 +88,7 @@ So just go and read the config sample file.
 
 Install the necessary Python dependencies by moving to the project directory and running:
 
-`pip3 install -r requirements.txt`.
+`pip3 install -r requirements.txt`
 
 This will install all the necessary python packages.
 
@@ -171,13 +171,9 @@ through the `/stats` command, which is only available to the bot owner.
 
 ## Starting the bot.
 
-Once you've set up your database and your configuration is complete, simply run the bat file(if on windows) or run (Linux):
+Once you've set up your database and your configuration is complete, simply run (Linux):
 
 `python3 -m AstrakoBot`
-
-You can use [nssm](https://nssm.cc/usage) to install the bot as service on windows and set it to restart on /gitpull 
-Make sure to edit the start and restart bats to your needs. 
-Note: the restart bat requires that User account control be disabled.
 
 For queries or any issues regarding the bot please open an issue ticket or visit us at [AstrakoBotSupport](https://t.me/AstrakoBotSupport)
 
