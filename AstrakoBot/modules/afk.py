@@ -153,16 +153,9 @@ def check_afk(update: Update, context: CallbackContext, user_id: int, fst_name: 
         time = humanize.naturaldelta(datetime.now() - user.time)
 
         if not user.reason:
-            res = "{} is *afk*.\nLast seen: `{} ago`".format(
-                fst_name,
-                time
-            )
+            res = f"{fst_name} is *afk*.\nLast seen: `{time} ago`"
         else:
-            res = "{} is *afk*.\nReason: `{}`\nLast seen: `{} ago`".format(
-                html.escape(fst_name),
-                html.escape(user.reason),
-                time
-            )
+            res = f"{fst_name} is *afk*.\nReason: `{user.reason}`\nLast seen: `{time} ago`"
 
         delmsg = update.effective_message.reply_text(
         res,
