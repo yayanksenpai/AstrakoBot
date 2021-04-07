@@ -37,3 +37,14 @@ def set_private_notes(chat_id, setting: bool):
         SESSION.add(private_notes)
         SESSION.commit()
 
+
+def migrate_chat(old_chat_id, new_chat_id):
+    with PRIVATE_NOTES_INSERTION_LOCK:
+        chat_filters = (
+            SESSION.query(PrivateNotes)
+            .filter(PrivateNotes.chat_id == str(old_chat_id))
+            .all()
+        )
+        for filt in chat_filters:
+            filt.chat_id = str(new_chat_id)
+        SESSION.commit()

@@ -45,6 +45,9 @@ def getprivatenotes(chat_id):
     return setting
 
 
+def __migrate__(old_chat_id, new_chat_id):
+    sql.migrate_chat(old_chat_id, new_chat_id)
+
 
 PRIVATENOTES_HANDLER = CommandHandler("privatenotes", privatenotes, run_async=True)
 
