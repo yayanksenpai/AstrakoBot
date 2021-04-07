@@ -40,7 +40,7 @@ def convert(update: Update, context: CallbackContext):
         )
 
     elif len(args) == 1:
-        update.effective_message.reply_text(__help__, parse_mode=ParseMode.MARKDOWN)
+        update.effective_message.reply_text("Check extras module help for `/cash` usage", parse_mode=ParseMode.MARKDOWN)
 
     else:
         update.effective_message.reply_text(
@@ -52,6 +52,3 @@ def convert(update: Update, context: CallbackContext):
 CONVERTER_HANDLER = CommandHandler("cash", convert, run_async=True)
 
 dispatcher.add_handler(CONVERTER_HANDLER)
-
-__command_list__ = ["cash"]
-__handlers__ = [CONVERTER_HANDLER]
