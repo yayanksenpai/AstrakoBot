@@ -7,6 +7,8 @@ from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.helper_funcs.chat_status import is_user_admin
 from AstrakoBot.modules.helper_funcs.extraction import extract_user
+from AstrakoBot.modules.helper_funcs.misc import delete
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from telegram import ChatPermissions, ParseMode, Update
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, run_async
@@ -15,7 +17,7 @@ GIF_ID = "CgACAgQAAx0CSVUvGgAC7KpfWxMrgGyQs-GUUJgt-TSO8cOIDgACaAgAAlZD0VHT3Zynpr
 
 
 def runs(update: Update, context: CallbackContext):
-    update.effective_message.reply_text(random.choice(fun_strings.RUN_STRINGS))
+    deletion(update, context, update.effective_message.reply_text(random.choice(fun_strings.RUN_STRINGS)))
 
 
 def sanitize(update: Update, context: CallbackContext):
@@ -30,22 +32,7 @@ def sanitize(update: Update, context: CallbackContext):
         if message.reply_to_message
         else message.reply_animation
     )
-    reply_animation(GIF_ID, caption=f"*Sanitizes {name}*")
-
-
-def sanitize(update: Update, context: CallbackContext):
-    message = update.effective_message
-    name = (
-        message.reply_to_message.from_user.first_name
-        if message.reply_to_message
-        else message.from_user.first_name
-    )
-    reply_animation = (
-        message.reply_to_message.reply_animation
-        if message.reply_to_message
-        else message.reply_animation
-    )
-    reply_animation(random.choice(fun_strings.GIFS), caption=f"*Sanitizes {name}*")
+    deletion(update, context, reply_animation(random.choice(fun_strings.GIFS), caption=f"*Sanitizes {name}*"))
 
 
 def slap(update: Update, context: CallbackContext):
@@ -103,7 +90,7 @@ def slap(update: Update, context: CallbackContext):
 
     reply = temp.format(user1=user1, user2=user2, item=item, hits=hit, throws=throw)
 
-    reply_text(reply, parse_mode=ParseMode.HTML)
+    deletion(update, context, reply_text(reply, parse_mode=ParseMode.HTML))
 
 
 def pat(update: Update, context: CallbackContext):
@@ -143,11 +130,11 @@ def pat(update: Update, context: CallbackContext):
     if pat_type == "Text":
         temp = random.choice(fun_strings.PAT_TEMPLATES)
         reply = temp.format(user1=user1, user2=user2)
-        reply_to.reply_text(reply, parse_mode=ParseMode.HTML)
+        deletion(update, context, reply_to.reply_text(reply, parse_mode=ParseMode.HTML))
 
 
 def roll(update: Update, context: CallbackContext):
-    update.message.reply_text(random.choice(range(1, 7)))
+    deletion(update, context, update.message.reply_text(random.choice(range(1, 7))))
 
 
 def shout(update: Update, context: CallbackContext):
@@ -161,11 +148,11 @@ def shout(update: Update, context: CallbackContext):
     result[0] = text[0]
     result = "".join(result)
     msg = "```\n" + result + "```"
-    return update.effective_message.reply_text(msg, parse_mode="MARKDOWN")
+    deletion(update, context, update.effective_message.reply_text(msg, parse_mode="MARKDOWN"))
 
 
 def toss(update: Update, context: CallbackContext):
-    update.message.reply_text(random.choice(fun_strings.TOSS))
+    deletion(update, context, update.message.reply_text(random.choice(fun_strings.TOSS)))
 
 
 def shrug(update: Update, context: CallbackContext):
@@ -173,7 +160,7 @@ def shrug(update: Update, context: CallbackContext):
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
     )
-    reply_text(r"¯\_(ツ)_/¯")
+    deletion(update, context, reply_text(r"¯\_(ツ)_/¯"))
 
 
 def bluetext(update: Update, context: CallbackContext):
@@ -181,9 +168,9 @@ def bluetext(update: Update, context: CallbackContext):
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
     )
-    reply_text(
+    deletion(update, context, reply_text(
         "/BLUE /TEXT\n/MUST /CLICK\n/I /AM /A /STUPID /ANIMAL /THAT /IS /ATTRACTED /TO /COLORS"
-    )
+    ))
 
 
 def rlg(update: Update, context: CallbackContext):
@@ -195,7 +182,7 @@ def rlg(update: Update, context: CallbackContext):
         repl = ears[0] + eyes[0] + mouth[0] + eyes[1] + ears[1]
     else:
         repl = ears[0] + eyes[0] + mouth[0] + eyes[0] + ears[1]
-    update.message.reply_text(repl)
+    deletion(update, context, update.message.reply_text(repl))
 
 
 def decide(update: Update, context: CallbackContext):
@@ -204,7 +191,7 @@ def decide(update: Update, context: CallbackContext):
         if update.effective_message.reply_to_message
         else update.effective_message.reply_text
     )
-    reply_text(random.choice(fun_strings.DECIDE))
+    deletion(update, context, reply_text(random.choice(fun_strings.DECIDE)))
 
 
 def eightball(update: Update, context: CallbackContext):
@@ -213,7 +200,7 @@ def eightball(update: Update, context: CallbackContext):
         if update.effective_message.reply_to_message
         else update.effective_message.reply_text
     )
-    reply_text(random.choice(fun_strings.EIGHTBALL))
+    deletion(update, context, reply_text(random.choice(fun_strings.EIGHTBALL)))
 
 
 def table(update: Update, context: CallbackContext):
@@ -222,7 +209,7 @@ def table(update: Update, context: CallbackContext):
         if update.effective_message.reply_to_message
         else update.effective_message.reply_text
     )
-    reply_text(random.choice(fun_strings.TABLE))
+    deletion(update, context, reply_text(random.choice(fun_strings.TABLE)))
 
 
 normiefont = [
@@ -295,7 +282,7 @@ def weebify(update: Update, context: CallbackContext):
         string = "  ".join(args).lower()
 
     if not string:
-        message.reply_text("Usage is `/weebify <text>`", parse_mode=ParseMode.MARKDOWN)
+        deletion(update, context, message.reply_text("Usage is `/weebify <text>`", parse_mode=ParseMode.MARKDOWN))
         return
 
     for normiecharacter in string:
@@ -304,9 +291,18 @@ def weebify(update: Update, context: CallbackContext):
             string = string.replace(normiecharacter, weebycharacter)
 
     if message.reply_to_message:
-        message.reply_to_message.reply_text(string)
+        deletion(update, context, message.reply_to_message.reply_text(string))
     else:
-        message.reply_text(string)
+        deletion(update, context, message.reply_text(string))
+
+
+def deletion(update: Update, context: CallbackContext, delmsg):
+    chat = update.effective_chat
+    cleartime = get_clearcmd(chat.id, "fun")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
 
 
 __help__ = """

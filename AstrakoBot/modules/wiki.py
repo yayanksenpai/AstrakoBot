@@ -1,12 +1,15 @@
-import wikipedia
+import wikipedia, os, glob
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.helper_funcs.misc import delete
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from telegram import ParseMode, Update
 from telegram.ext import CallbackContext, run_async
 from wikipedia.exceptions import DisambiguationError, PageError
 
 
 def wiki(update: Update, context: CallbackContext):
+    chat = update.effective_chat
     msg = (
         update.effective_message.reply_to_message
         if update.effective_message.reply_to_message
@@ -20,14 +23,14 @@ def wiki(update: Update, context: CallbackContext):
     try:
         res = wikipedia.summary(search)
     except DisambiguationError as e:
-        update.message.reply_text(
+        delmsg = update.message.reply_text(
             "Disambiguated pages found! Adjust your query accordingly.\n<i>{}</i>".format(
                 e
             ),
             parse_mode=ParseMode.HTML,
         )
     except PageError as e:
-        update.message.reply_text(
+        delmsg = update.message.reply_text(
             "<code>{}</code>".format(e), parse_mode=ParseMode.HTML
         )
     if res:
@@ -38,17 +41,29 @@ def wiki(update: Update, context: CallbackContext):
             with open("result.txt", "w") as f:
                 f.write(f"{result}\n\nUwU OwO OmO UmU")
             with open("result.txt", "rb") as f:
-                context.bot.send_document(
+                delmsg = context.bot.send_document(
                     document=f,
                     filename=f.name,
                     reply_to_message_id=update.message.message_id,
                     chat_id=update.effective_chat.id,
                     parse_mode=ParseMode.HTML,
                 )
+
+                try:
+                    for f in glob.glob("result.txt"):
+                        os.remove(f)
+                except Exception:
+                    pass
+
         else:
-            update.message.reply_text(
+            delmsg = update.message.reply_text(
                 result, parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
+
+    cleartime = get_clearcmd(chat.id, "wiki")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 WIKI_HANDLER = DisableAbleCommandHandler("wiki", wiki, run_async=True)

@@ -1,9 +1,11 @@
 import os, glob, json
 
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from telegram import Bot, Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, run_async
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.helper_funcs.misc import delete
 from youtubesearchpython import SearchVideos
 
 from youtube_dl import YoutubeDL
@@ -12,6 +14,7 @@ from youtube_dl import YoutubeDL
 def youtube(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
+    chat = update.effective_chat
     yt = message.text[len("/youtube ") :]
     if yt:
         search = SearchVideos(yt, offset=1, mode="json", max_results=1)
@@ -38,19 +41,24 @@ def youtube(update: Update, context: CallbackContext):
 
         msg = "*Preparing to upload file:*\n"
         msg += f"`{title}`\n"
-        message.reply_text(
+        delmsg = message.reply_text(
             msg, 
             parse_mode=ParseMode.MARKDOWN,            
             reply_markup = InlineKeyboardMarkup(buttons)
         )
     else:
-        message.reply_text("Specify a song or video"
+        delmsg = message.reply_text("Specify a song or video"
         )
 
+    cleartime = get_clearcmd(chat.id, "youtube")
+    
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 def youtube_callback(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
+    chat = update.effective_chat
     query = update.callback_query
 
     media = query.data.split(";")
@@ -84,13 +92,13 @@ def youtube_callback(update: Update, context: CallbackContext):
             rip_data = rip.extract_info(media_url)
             
             try:
-                message.reply_audio(
+                delmsg = message.reply_audio(
                 audio = open(f"{rip_data['id']}.{codec}", "rb"),
                 duration = int(rip_data['duration']),
                 title = str(rip_data['title']),
                 parse_mode = ParseMode.HTML)
             except:
-                message.reply_text(
+                delmsg = message.reply_text(
                     "Song is too large for processing, or any other error happened. Try again later"
                 )
 
@@ -114,14 +122,14 @@ def youtube_callback(update: Update, context: CallbackContext):
             rip_data = rip.extract_info(media_url)
             
             try:
-                message.reply_video(
+                delmsg = message.reply_video(
                 video = open(f"{rip_data['id']}.{codec}", "rb"),
                 duration = int(rip_data['duration']),
                 caption = rip_data['title'],
                 supports_streaming = True,
                 parse_mode = ParseMode.HTML)
             except:
-                message.reply_text(
+                delmsg = message.reply_text(
                     "Video is too large for processing, or any other error happened. Try again later"
                 )
 
@@ -131,6 +139,10 @@ def youtube_callback(update: Update, context: CallbackContext):
     except Exception:
         pass
 
+    cleartime = get_clearcmd(chat.id, "youtube")
+    
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 YOUTUBE_HANDLER = DisableAbleCommandHandler(["youtube", "yt"], youtube, run_async = True)
@@ -139,5 +151,3 @@ YOUTUBE_CALLBACKHANDLER = CallbackQueryHandler(
 )
 dispatcher.add_handler(YOUTUBE_HANDLER)
 dispatcher.add_handler(YOUTUBE_CALLBACKHANDLER)
-
-__handlers__ = [YOUTUBE_HANDLER, YOUTUBE_CALLBACKHANDLER]

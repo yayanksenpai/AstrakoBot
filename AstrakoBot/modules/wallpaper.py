@@ -3,6 +3,8 @@ from random import randint
 import requests as r
 from AstrakoBot import SUPPORT_CHAT, WALL_API, dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
+from AstrakoBot.modules.helper_funcs.misc import delete
 from telegram import Update
 from telegram.ext import CallbackContext, run_async
 
@@ -37,14 +39,14 @@ def wall(update: Update, context: CallbackContext):
                 wallpaper = wallpapers[index]
                 wallpaper = wallpaper.get("url_image")
                 wallpaper = wallpaper.replace("\\", "")
-                bot.send_photo(
+                delmsg_preview = bot.send_photo(
                     chat_id,
                     photo=wallpaper,
                     caption="Preview",
                     reply_to_message_id=msg_id,
                     timeout=60,
                 )
-                bot.send_document(
+                delmsg = bot.send_document(
                     chat_id,
                     document=wallpaper,
                     filename="wallpaper",
@@ -52,6 +54,12 @@ def wall(update: Update, context: CallbackContext):
                     reply_to_message_id=msg_id,
                     timeout=60,
                 )
+
+    cleartime = get_clearcmd(chat_id, "wall")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg_preview, cleartime.time)
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 WALLPAPER_HANDLER = DisableAbleCommandHandler("wall", wall, run_async=True)

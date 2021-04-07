@@ -1,3 +1,4 @@
+from asyncio import sleep
 from AstrakoBot.modules.helper_funcs.telethn.chatstatus import (
     can_delete_messages,
     user_is_admin,
@@ -11,6 +12,8 @@ from AstrakoBot.modules.helper_funcs.telethn.chatstatus import (
     can_delete_messages,
     user_is_admin,
 )
+
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 
 
 @telethn.on(events.NewMessage(pattern="^[!/]purge$"))
@@ -50,7 +53,13 @@ async def purge_messages(event):
         pass
     time_ = time.perf_counter() - start
     text = f"Purged Successfully in {time_:0.2f} Second(s)"
-    await event.respond(text, parse_mode="markdown")
+    delmsg = await event.respond(text, parse_mode="markdown")
+    
+    cleartime = get_clearcmd(event.chat_id, "purge")
+
+    if cleartime:
+        await sleep(cleartime.time)
+        await delmsg.delete()
 
 
 @telethn.on(events.NewMessage(pattern="^[!/]del$"))

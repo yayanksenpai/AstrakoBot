@@ -15,11 +15,14 @@ from telegram.ext import (
 from telegram.ext import Filters, MessageHandler, run_async
 from AstrakoBot.modules.helper_funcs.extraction import extract_user_and_text
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
+from AstrakoBot.modules.helper_funcs.misc import delete
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.thonkify_dict import thonkifydict
 
 
 def plet(update: Update, context: CallbackContext):
+    chat = update.effective_chat
     message = update.effective_message
     if not message.reply_to_message:
         msg = message.text.split(None, 1)[1]
@@ -66,7 +69,13 @@ def plet(update: Update, context: CallbackContext):
         buffer.name = "image.png"
         image.save(buffer, "PNG")
         buffer.seek(0)
-        context.bot.send_sticker(chat_id=message.chat_id, sticker=buffer)
+        delmsg = context.bot.send_sticker(chat_id=message.chat_id, sticker=buffer)
+
+
+    cleartime = get_clearcmd(chat.id, "fun")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 PLET_HANDLER = DisableAbleCommandHandler("plet", plet, run_async=True)

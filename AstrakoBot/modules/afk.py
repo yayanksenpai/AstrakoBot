@@ -2,6 +2,7 @@ import random
 import html
 from datetime import datetime
 import humanize
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import (
@@ -10,6 +11,7 @@ from AstrakoBot.modules.disable import (
 )
 from AstrakoBot.modules.sql import afk_sql as sql
 from AstrakoBot.modules.users import get_user_id
+from AstrakoBot.modules.helper_funcs.misc import delete
 from telegram import MessageEntity, Update, ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, Filters, MessageHandler, run_async
@@ -21,6 +23,7 @@ AFK_REPLY_GROUP = 8
 def afk(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     user = update.effective_user
+    chat = update.effective_chat
 
     if not user:  # ignore channels
         return
@@ -40,8 +43,14 @@ def afk(update: Update, context: CallbackContext):
     sql.set_afk(update.effective_user.id, reason)
     fname = update.effective_user.first_name
     try:
-        update.effective_message.reply_text(
+        delmsg = update.effective_message.reply_text(
             "{} is now away!{}".format(fname, notice))
+
+        cleartime = get_clearcmd(chat.id, "afk")
+
+        if cleartime:
+            context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
     except BadRequest:
         pass
 
@@ -49,6 +58,7 @@ def afk(update: Update, context: CallbackContext):
 def no_longer_afk(update: Update, context: CallbackContext):
     user = update.effective_user
     message = update.effective_message
+    chat = update.effective_chat
 
     if not user:  # ignore channels
         return
@@ -70,8 +80,14 @@ def no_longer_afk(update: Update, context: CallbackContext):
                 "Where is {}?\nIn the chat!",
             ]
             chosen_option = random.choice(options)
-            update.effective_message.reply_text(
+            delmsg = update.effective_message.reply_text(
                 chosen_option.format(firstname))
+
+            cleartime = get_clearcmd(chat.id, "afk")
+
+            if cleartime:
+                context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
         except:
             return
 
@@ -127,6 +143,7 @@ def reply_afk(update: Update, context: CallbackContext):
 
 
 def check_afk(update: Update, context: CallbackContext, user_id: int, fst_name: str, userc_id: int):
+    chat = update.effective_chat
     if sql.is_afk(user_id):
         user = sql.check_afk_status(user_id)
 
@@ -140,20 +157,22 @@ def check_afk(update: Update, context: CallbackContext, user_id: int, fst_name: 
                 fst_name,
                 time
             )
-            update.effective_message.reply_text(
-                res,
-                parse_mode = ParseMode.MARKDOWN,
-                )
         else:
             res = "{} is *afk*.\nReason: `{}`\nLast seen: `{} ago`".format(
                 html.escape(fst_name),
                 html.escape(user.reason),
                 time
             )
-            update.effective_message.reply_text(
-            res,
-            parse_mode = ParseMode.MARKDOWN,
-            )
+
+        delmsg = update.effective_message.reply_text(
+        res,
+        parse_mode = ParseMode.MARKDOWN,
+        )
+
+        cleartime = get_clearcmd(chat.id, "afk")
+
+        if cleartime:
+            context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def __gdpr__(user_id):

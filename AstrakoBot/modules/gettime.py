@@ -4,6 +4,8 @@ from typing import List
 from requests import get
 from AstrakoBot import TIME_API_KEY, dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
+from AstrakoBot.modules.helper_funcs.misc import delete
 from telegram import ParseMode, Update
 from telegram.ext import CallbackContext, run_async
 
@@ -59,6 +61,7 @@ def generate_time(to_find: str, findtype: List[str]) -> str:
 
 
 def gettime(update: Update, context: CallbackContext):
+    chat = update.effective_chat
     message = update.effective_message
 
     try:
@@ -77,7 +80,7 @@ def gettime(update: Update, context: CallbackContext):
         result = generate_time(query_timezone, ["zoneName", "countryName"])
 
     if not result:
-        send_message.edit_text(
+        delmsg = send_message.edit_text(
             f"Timezone info not available for <b>{query}</b>\n"
             '<b>All Timezones:</b> <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">List here</a>',
             parse_mode=ParseMode.HTML,
@@ -85,9 +88,14 @@ def gettime(update: Update, context: CallbackContext):
         )
         return
 
-    send_message.edit_text(
+    delmsg = send_message.edit_text(
         result, parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
+
+    cleartime = get_clearcmd(chat.id, "time")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 TIME_HANDLER = DisableAbleCommandHandler("time", gettime, run_async=True)

@@ -22,13 +22,14 @@ from AstrakoBot.modules.helper_funcs.chat_status import (
     is_user_ban_protected,
     user_admin,
 )
-from AstrakoBot.modules.helper_funcs.misc import build_keyboard, revert_buttons
+from AstrakoBot.modules.helper_funcs.misc import build_keyboard, delete, revert_buttons
 from AstrakoBot.modules.helper_funcs.msg_types import get_welcome_type
 from AstrakoBot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
     markdown_parser,
 )
 from AstrakoBot.modules.log_channel import loggable
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.sql.global_bans_sql import is_user_gbanned
 from telegram import (
     ChatPermissions,
@@ -187,9 +188,9 @@ def new_member(update: Update, context: CallbackContext):
 
             # Give the owner a special welcome
             if new_mem.id == OWNER_ID:
-                update.effective_message.reply_text(
+                deletion(update, context, update.effective_message.reply_text(
                     "Oh, Genos? Let's get this moving.", reply_to_message_id=reply
-                )
+                ))
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
@@ -199,10 +200,10 @@ def new_member(update: Update, context: CallbackContext):
 
             # Welcome Devs
             elif new_mem.id in DEV_USERS:
-                update.effective_message.reply_text(
+                deletion(update, context, update.effective_message.reply_text(
                     "Whoa! A developer user just joined!",
                     reply_to_message_id=reply,
-                )
+                ))
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
@@ -212,10 +213,10 @@ def new_member(update: Update, context: CallbackContext):
 
             # Welcome Sudos
             elif new_mem.id in DRAGONS:
-                update.effective_message.reply_text(
+                deletion(update, context, update.effective_message.reply_text(
                     "Huh! A sudo user just joined! Stay Alert!",
                     reply_to_message_id=reply,
-                )
+                ))
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
@@ -225,10 +226,10 @@ def new_member(update: Update, context: CallbackContext):
 
             # Welcome Support
             elif new_mem.id in DEMONS:
-                update.effective_message.reply_text(
+                deletion(update, context, update.effective_message.reply_text(
                     "Huh! A support user just joined!",
                     reply_to_message_id=reply,
-                )
+                ))
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
@@ -238,9 +239,9 @@ def new_member(update: Update, context: CallbackContext):
 
             # Welcome Whitelisted
             elif new_mem.id in WOLVES:
-                update.effective_message.reply_text(
+                deletion(update, context, update.effective_message.reply_text(
                     "Oof! A whitelist user just joined!", reply_to_message_id=reply
-                )
+                ))
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
@@ -450,6 +451,7 @@ def new_member(update: Update, context: CallbackContext):
                 )
             else:
                 sent = send(update, res, keyboard, backup_message)
+            deletion(update, context, sent)
             prev_welc = sql.get_clean_pref(chat.id)
             if prev_welc:
                 try:
@@ -594,12 +596,14 @@ def left_member(update: Update, context: CallbackContext):
 
             keyboard = InlineKeyboardMarkup(keyb)
 
-            send(
+            delmsg = send(
                 update,
                 res,
                 keyboard,
                 random.choice(sql.DEFAULT_GOODBYE_MESSAGES).format(first=first_name),
             )
+
+            deletion(update, context, delmsg)
 
 
 @user_admin
@@ -1041,6 +1045,14 @@ def welcome_mute_help(update: Update, context: CallbackContext):
     update.effective_message.reply_text(
         WELC_MUTE_HELP_TXT, parse_mode=ParseMode.MARKDOWN
     )
+
+
+def deletion(update: Update, context: CallbackContext, delmsg):
+    chat = update.effective_chat
+    cleartime = get_clearcmd(chat.id, "welcome")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 # TODO: get welcome data from group butler snap

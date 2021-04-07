@@ -29,8 +29,10 @@ from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.sql.global_bans_sql import is_user_gbanned
 from AstrakoBot.modules.sql.afk_sql import is_afk, check_afk_status
 from AstrakoBot.modules.sql.users_sql import get_user_num_chats
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.helper_funcs.chat_status import sudo_plus
 from AstrakoBot.modules.helper_funcs.extraction import extract_user
+from AstrakoBot.modules.helper_funcs.misc import delete
 from AstrakoBot import telethn as AstrakoBotTelethonClient, DRAGONS, DEMONS
 
 
@@ -144,7 +146,13 @@ def info(update: Update, context: CallbackContext):
             and not message.parse_entities([MessageEntity.TEXT_MENTION])
         )
     ):
-        message.reply_text("I can't extract a user from this.")
+        delmsg = message.reply_text("I can't extract a user from this.")
+
+        cleartime = get_clearcmd(chat.id, "info")
+        
+        if cleartime:
+            context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
         return
 
     else:
@@ -242,7 +250,7 @@ def info(update: Update, context: CallbackContext):
             _file = bot.get_file(profile["file_id"])
             _file.download(f"{user.id}.png")
 
-            message.reply_document(
+            delmsg = message.reply_document(
                 document=open(f"{user.id}.png", "rb"),
                 caption=(text),
                 parse_mode=ParseMode.HTML,
@@ -251,16 +259,22 @@ def info(update: Update, context: CallbackContext):
             os.remove(f"{user.id}.png")
         # Incase user don't have profile pic, send normal text
         except IndexError:
-            message.reply_text(
+            delmsg = message.reply_text(
                 text, parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
 
     else:
-        message.reply_text(
+        delmsg = message.reply_text(
             text, parse_mode=ParseMode.HTML, disable_web_page_preview=True
         )
 
     rep.delete()
+
+
+    cleartime = get_clearcmd(chat.id, "info")
+    
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def about_me(update: Update, context: CallbackContext):

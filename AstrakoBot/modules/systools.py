@@ -22,6 +22,7 @@ from AstrakoBot import DEV_USERS, LOGGER, StartTime, dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 from AstrakoBot.modules.helper_funcs.misc import delete
 from AstrakoBot.modules.helper_funcs.chat_status import owner_plus, dev_plus, sudo_plus
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 
 
 def get_readable_time(seconds: int) -> str:
@@ -89,20 +90,18 @@ def shell(update: Update, context: CallbackContext):
         with open("shell_output.txt", "w") as file:
             file.write(msg)
         with open("shell_output.txt", "rb") as doc:
-            delmsg = message.reply_document(
+            message.reply_document(
                 document = doc,
                 filename = doc.name,
                 reply_to_message_id = message.message_id,
             )
     else:
 
-        delmsg = message.reply_text(
+        message.reply_text(
             text = msg,
             parse_mode = ParseMode.MARKDOWN,
             disable_web_page_preview = True,
         )
-
-    context.dispatcher.run_async(delete, delmsg, 120)
 
 
 @dev_plus
@@ -136,13 +135,11 @@ def status(update: Update, context: CallbackContext):
     swap = psutil.swap_memory()
     msg += f"SWAP: `{get_size(swap.total)} - {get_size(swap.used)} used ({swap.percent}%)`\n"
 
-    delmsg = message.reply_text(
+    message.reply_text(
         text = msg,
         parse_mode = ParseMode.MARKDOWN,
         disable_web_page_preview = True,
     )
-
-    context.dispatcher.run_async(delete, delmsg, 120)
 
 
 @owner_plus
@@ -150,19 +147,17 @@ def get_bot_ip(update: Update, context: CallbackContext):
     message = update.effective_message
     ip = requests.get("http://ipinfo.io/ip")
 
-    delmsg = message.reply_text(
+    message.reply_text(
         text = f"*IP:* `{ip.text}`",
         parse_mode = ParseMode.MARKDOWN,
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 60)
-
 
 @sudo_plus
 def ping(update: Update, context: CallbackContext):
     message = update.effective_message
-
+    chat = update.effective_chat
     start_time = time.time()
     msg = message.reply_text("Pinging...")
     end_time = time.time()
@@ -177,7 +172,10 @@ def ping(update: Update, context: CallbackContext):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 30)
+    cleartime = get_clearcmd(chat.id, "ping")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 @dev_plus
@@ -195,6 +193,7 @@ def speedtestxyz(update: Update, context: CallbackContext):
 
 def speedtestxyz_callback(update: Update, context: CallbackContext):
     message = update.effective_message
+    chat = update.effective_chat
     query = update.callback_query
 
     if query.from_user.id in DEV_USERS:
@@ -223,7 +222,10 @@ def speedtestxyz_callback(update: Update, context: CallbackContext):
                 disable_web_page_preview = True,
             )
 
-        context.dispatcher.run_async(delete, delmsg, 60)
+        cleartime = get_clearcmd(chat.id, "speedtest")
+
+        if cleartime:
+            context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
     else:
         query.answer("You are required to be a developer user to use this command.")

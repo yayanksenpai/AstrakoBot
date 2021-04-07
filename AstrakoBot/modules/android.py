@@ -11,13 +11,16 @@ from telegram.ext import Updater, CommandHandler, MessageHandler
 from telegram.ext import CallbackContext, run_async
 from ujson import loads
 from yaml import load, Loader
+
 from AstrakoBot import dispatcher
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.github import getphh
 from AstrakoBot.modules.helper_funcs.misc import delete
 
 
 def magisk(update: Update, context: CallbackContext):
     message = update.effective_message
+    chat = update.effective_chat
     link = "https://raw.githubusercontent.com/topjohnwu/magisk_files/"
     magisk_dict = {
         "*Stable*": "master/stable.json",
@@ -42,12 +45,16 @@ def magisk(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "magisk")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def checkfw(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
+    chat = update.effective_chat
     
     if len(args) == 2:
         temp, csc = args
@@ -71,12 +78,12 @@ def checkfw(update: Update, context: CallbackContext):
                     msg += f'• Phone: `{phone}`\n'
                 if os:
                     msg += f'• Android: `{os}`\n'
-                msg += f''
+                msg += ''
             else:
                 msg = f'*No public release found for {model.upper()} and {csc.upper()}.*\n\n'
 
     else:
-        msg = f'Give me something to fetch, like:\n`/checkfw SM-N975F DBT`'
+        msg = 'Give me something to fetch, like:\n`/checkfw SM-N975F DBT`'
 
     delmsg = message.reply_text(
         text = msg,
@@ -84,12 +91,16 @@ def checkfw(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "checkfw")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def getfw(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
+    chat = update.effective_chat
     btn = ""
     
     if len(args) == 2:
@@ -121,14 +132,14 @@ def getfw(update: Update, context: CallbackContext):
                     msg += f'• Phone: `{phone}`\n'
                 if os:
                     msg += f'• Android: `{os}`\n'
-            msg += f'\n'
+            msg += '\n'
             msg += f'*Downloads for {model.upper()} and {csc.upper()}*\n'
             btn = [[InlineKeyboardButton(text=f"samfrew.com", url = url1)]]
             btn += [[InlineKeyboardButton(text=f"sammobile.com", url = url2)]]
             btn += [[InlineKeyboardButton(text=f"sfirmware.com", url = url3)]]
             btn += [[InlineKeyboardButton(text=f"samfw.com", url = url4)]]
     else:
-        msg = f'Give me something to fetch, like:\n`/getfw SM-N975F DBT`'
+        msg = 'Give me something to fetch, like:\n`/getfw SM-N975F DBT`'
 
     delmsg = message.reply_text(
         text = msg,
@@ -137,12 +148,16 @@ def getfw(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "getfw")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def phh(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
+    chat = update.effective_chat
     index = int(args[0]) if len(args) > 0 and args[0].isdigit() else 0
     text = getphh(index)
 
@@ -152,11 +167,15 @@ def phh(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 60)
+    cleartime = get_clearcmd(chat.id, "phh")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def miui(update: Update, context: CallbackContext):
     message = update.effective_message
+    chat = update.effective_chat
     device = message.text[len("/miui ") :]
     markup = []
 
@@ -184,7 +203,7 @@ def miui(update: Update, context: CallbackContext):
             device = " ".join(device)
             msg = f"The latest firmwares for the *{device}* are:"
     else:
-        msg = f'Give me something to fetch, like:\n`/miui whyred`'
+        msg = 'Give me something to fetch, like:\n`/miui whyred`'
 
     delmsg = message.reply_text(
         text = msg,
@@ -193,11 +212,15 @@ def miui(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "miui")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def orangefox(update: Update, context: CallbackContext):
     message = update.effective_message
+    chat = update.effective_chat
     device = message.text[len("/orangefox ") :]
     btn = ""
 
@@ -239,7 +262,7 @@ def orangefox(update: Update, context: CallbackContext):
             msg += f"• MD5: `{md5}`\n"
             btn = [[InlineKeyboardButton(text=f"Download", url = dl_link)]]
     else:
-        msg = f'Give me something to fetch, like:\n`/orangefox a3y17lte`'
+        msg = 'Give me something to fetch, like:\n`/orangefox a3y17lte`'
 
     delmsg = message.reply_text(
         text = msg,
@@ -248,11 +271,15 @@ def orangefox(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "orangefox")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def twrp(update: Update, context: CallbackContext):
     message = update.effective_message
+    chat = update.effective_chat
     device = message.text[len("/twrp ") :]
     btn = ""
 
@@ -274,7 +301,7 @@ def twrp(update: Update, context: CallbackContext):
             msg += f"• File: `{dl_file}`\n\n"
             btn = [[InlineKeyboardButton(text=f"Download", url = dl_link)]]
     else:
-        msg = f'Give me something to fetch, like:\n`/twrp a3y17lte`'
+        msg = 'Give me something to fetch, like:\n`/twrp a3y17lte`'
 
     delmsg = message.reply_text(
         text = msg,
@@ -283,7 +310,10 @@ def twrp(update: Update, context: CallbackContext):
         disable_web_page_preview = True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 120)
+    cleartime = get_clearcmd(chat.id, "twrp")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 __help__ = """

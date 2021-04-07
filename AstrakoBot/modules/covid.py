@@ -4,11 +4,13 @@ from telegram import Bot, Update, ParseMode
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackContext, run_async
 from AstrakoBot import dispatcher
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.helper_funcs.misc import delete
 
 
 def covid(update: Update, context: CallbackContext):
     bot = context.bot
+    chat = update.effective_chat
     message = update.effective_message
     country = message.text[len("/covid ") :]
     covid = Covid()
@@ -40,12 +42,11 @@ def covid(update: Update, context: CallbackContext):
         disable_web_page_preview=True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 60)
+    cleartime = get_clearcmd(chat.id, "covid")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 covid_handler = CommandHandler(["covid"], covid, run_async=True)
 dispatcher.add_handler(covid_handler)
-
-
-__command_list__ = ["covid"]
-__handlers__ = [covid_handler]

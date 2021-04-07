@@ -22,7 +22,7 @@ from AstrakoBot.modules.helper_funcs.handlers import MessageHandlerChecker
 from AstrakoBot.modules.helper_funcs.chat_status import user_admin
 from AstrakoBot.modules.helper_funcs.extraction import extract_text
 from AstrakoBot.modules.helper_funcs.filters import CustomFilters
-from AstrakoBot.modules.helper_funcs.misc import build_keyboard_parser
+from AstrakoBot.modules.helper_funcs.misc import build_keyboard_parser, delete
 from AstrakoBot.modules.helper_funcs.msg_types import get_filter_type
 from AstrakoBot.modules.helper_funcs.string_handling import (
     split_quotes,
@@ -30,6 +30,7 @@ from AstrakoBot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
     markdown_to_html,
 )
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.sql import cust_filters_sql as sql
 
 from AstrakoBot.modules.connection import connected
@@ -81,20 +82,20 @@ def list_handlers(update: Update, context: CallbackContext):
     for keyword in all_handlers:
         entry = " • `{}`\n".format(escape_markdown(keyword))
         if len(entry) + len(filter_list) > telegram.MAX_MESSAGE_LENGTH:
-            send_message(
+            deletion(update, context, send_message(
                 update.effective_message,
                 filter_list.format(chat_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
-            )
+            ))
             filter_list = entry
         else:
             filter_list += entry
 
-    send_message(
+    deletion(update, context, send_message(
         update.effective_message,
         filter_list.format(chat_name),
         parse_mode=telegram.ParseMode.MARKDOWN,
-    )
+    ))
 
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
@@ -216,11 +217,11 @@ def filters(update: Update, context: CallbackContext):
     # sql.add_filter(chat_id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video, buttons)
 
     if add is True:
-        send_message(
+        deletion(update, context, send_message(
             update.effective_message,
             "Saved filter '{}' in *{}*!".format(keyword, chat_name),
             parse_mode=telegram.ParseMode.MARKDOWN,
-        )
+        ))
     raise DispatcherHandlerStop
 
 
@@ -256,17 +257,17 @@ def stop_filter(update: Update, context: CallbackContext):
     for keyword in chat_filters:
         if keyword == args[1]:
             sql.remove_filter(chat_id, args[1])
-            send_message(
+            deletion(update, context, send_message(
                 update.effective_message,
                 "Okay, I'll stop replying to that filter in *{}*.".format(chat_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
-            )
+            ))
             raise DispatcherHandlerStop
 
-    send_message(
+    deletion(update, context, send_message(
         update.effective_message,
         "That's not a filter - Click: /filters to get currently active filters.",
-    )
+    ))
 
 
 def reply_filter(update: Update, context: CallbackContext):
@@ -312,11 +313,11 @@ def reply_filter(update: Update, context: CallbackContext):
                     if text.startswith("~!") and text.endswith("!~"):
                         sticker_id = text.replace("~!", "").replace("!~", "")
                         try:
-                            context.bot.send_sticker(
+                            deletion(update, context, context.bot.send_sticker(
                                 chat.id,
                                 sticker_id,
                                 reply_to_message_id=message.message_id,
-                            )
+                            ))
                             return
                         except BadRequest as excp:
                             if (
@@ -370,34 +371,34 @@ def reply_filter(update: Update, context: CallbackContext):
                 if filt.file_type in (sql.Types.BUTTON_TEXT, sql.Types.TEXT):
                     try:
                         if message.reply_to_message:
-                            context.bot.send_message(
+                            deletion(update, context, context.bot.send_message(
                                 chat.id,
                                 markdown_to_html(filtext),
                                 reply_to_message_id=message.reply_to_message.message_id,
                                 parse_mode=ParseMode.HTML,
                                 disable_web_page_preview=True,
                                 reply_markup=keyboard,
-                            )
+                            ))
                         else:
-                            context.bot.send_message(
+                            deletion(update, context, context.bot.send_message(
                                 chat.id,
                                 markdown_to_html(filtext),
                                 reply_to_message_id=message.message_id,
                                 parse_mode=ParseMode.HTML,
                                 disable_web_page_preview=True,
                                 reply_markup=keyboard,
-                            )
+                            ))
                     except BadRequest as excp:
                         error_catch = get_exception(excp, filt, chat)
                         if error_catch == "noreply":
                             try:
-                                context.bot.send_message(
+                                deletion(update, context, context.bot.send_message(
                                     chat.id,
                                     markdown_to_html(filtext),
                                     parse_mode=ParseMode.HTML,
                                     disable_web_page_preview=True,
                                     reply_markup=keyboard,
-                                )
+                                ))
                             except BadRequest as excp:
                                 LOGGER.exception("Error in filters: " + excp.message)
                                 send_message(
@@ -418,19 +419,19 @@ def reply_filter(update: Update, context: CallbackContext):
                 else:
                     try:
                         if message.reply_to_message:
-                            ENUM_FUNC_MAP[filt.file_type](
+                            deletion(update, context, ENUM_FUNC_MAP[filt.file_type](
                                 chat.id,
                                 filt.file_id,
                                 reply_to_message_id=message.reply_to_message.message_id,
                                 reply_markup=keyboard,
-                            )
+                            ))
                         else:
-                            ENUM_FUNC_MAP[filt.file_type](
+                            deletion(update, context, ENUM_FUNC_MAP[filt.file_type](
                                 chat.id,
                                 filt.file_id,
                                 reply_to_message_id=message.message_id,
                                 reply_markup=keyboard,
-                            )
+                            ))
                     except BadRequest:
                         send_message(
                             message,
@@ -456,13 +457,13 @@ def reply_filter(update: Update, context: CallbackContext):
                     keyboard = InlineKeyboardMarkup(keyb)
 
                     try:
-                        send_message(
+                        deletion(update, context, send_message(
                             update.effective_message,
                             filt.reply,
                             parse_mode=ParseMode.MARKDOWN,
                             disable_web_page_preview=True,
                             reply_markup=keyboard,
-                        )
+                        ))
                     except BadRequest as excp:
                         if excp.message == "Unsupported url protocol":
                             try:
@@ -477,13 +478,13 @@ def reply_filter(update: Update, context: CallbackContext):
                                 pass
                         elif excp.message == "Reply message not found":
                             try:
-                                context.bot.send_message(
+                                deletion(update, context, context.bot.send_message(
                                     chat.id,
                                     filt.reply,
                                     parse_mode=ParseMode.MARKDOWN,
                                     disable_web_page_preview=True,
                                     reply_markup=keyboard,
-                                )
+                                ))
                             except BadRequest as excp:
                                 LOGGER.exception("Error in filters: " + excp.message)
                                 pass
@@ -577,6 +578,14 @@ def rmall_callback(update: Update, context: CallbackContext):
             query.answer("Only owner of the chat can do this.")
         if member.status == "member":
             query.answer("You need to be admin to do this.")
+
+
+def deletion(update: Update, context: CallbackContext, delmsg):
+    chat = update.effective_chat
+    cleartime = get_clearcmd(chat.id, "filters")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 # NOT ASYNC NOT A HANDLER

@@ -7,6 +7,7 @@ from telegram import Bot, Update, ParseMode
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import CallbackContext, run_async
 from AstrakoBot import WEATHER_API, dispatcher
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.helper_funcs.misc import delete
 
 
@@ -145,11 +146,10 @@ def weather(update: Update, context: CallbackContext):
         disable_web_page_preview=True,
     )
 
-    context.dispatcher.run_async(delete, delmsg, 60)
+    cleartime = get_clearcmd(chat.id, "weather")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 WEATHER_HANDLER = CommandHandler(["weather"], weather, run_async=True)
 dispatcher.add_handler(WEATHER_HANDLER)
-
-
-__command_list__ = ["weather"]
-__handlers__ = [WEATHER_HANDLER]

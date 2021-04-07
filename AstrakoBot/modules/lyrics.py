@@ -1,38 +1,45 @@
 from tswift import Song
 
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from telegram import Bot, Update, Message, Chat
 from telegram.ext import Updater, CommandHandler, CallbackContext, run_async
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.helper_funcs.misc import delete
 
 
 def lyrics(update: Update, context: CallbackContext):
-    bot = context.bot
-    msg = update.effective_message
-    query = msg.text[len("/lyrics ") :]
+    message = update.effective_message
+    chat = update.effective_chat
+    query = message.text[len("/lyrics ") :]
     song = ""
-    if not query:
-        msg.reply_text("You haven't specified which song to look for!")
-        return
-    else:
+
+    if query:
         song = Song.find_song(query)
         if song:
             if song.lyrics:
-                reply = song.format()
+                msg = song.format()
             else:
-                reply = "Couldn't find any lyrics for that song!"
+                msg = "Couldn't find any lyrics for that song!"
         else:
-            reply = "Song not found!"
-        if len(reply) > 4090:
+            msg = "Song not found!"
+        if len(msg) > 4090:
             with open("lyrics.txt", "w") as f:
-                f.write(f"{reply}\n\n\nOwO UwU OmO")
+                msg = f.write(f"{reply}\n\n\nOwO UwU OmO")
             with open("lyrics.txt", "rb") as f:
-                msg.reply_document(
-                    document=f,
-                    caption="Message length exceeded max limit! Sending as a text file.",
-                )
-        else:
-            msg.reply_text(reply)
+                msg = "Message length exceeded max limit! Sending as a text file."
+    else:
+        msg = "You haven't specified which song to look for!"
+
+    delmsg = message.reply_text(
+        text = msg,
+        disable_web_page_preview = True,
+    )
+
+    cleartime = get_clearcmd(chat.id, "lyrics")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 LYRICS_HANDLER = DisableAbleCommandHandler("lyrics", lyrics, run_async=True)

@@ -4,11 +4,12 @@ import random
 from typing import Optional
 
 import AstrakoBot.modules.sql.notes_sql as sql
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, dispatcher, DRAGONS
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.helper_funcs.handlers import MessageHandlerChecker
 from AstrakoBot.modules.helper_funcs.chat_status import user_admin, connection_status
-from AstrakoBot.modules.helper_funcs.misc import build_keyboard, revert_buttons
+from AstrakoBot.modules.helper_funcs.misc import build_keyboard, revert_buttons, delete
 from AstrakoBot.modules.helper_funcs.msg_types import get_note_type
 from AstrakoBot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
@@ -181,7 +182,7 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                             reply_markup=keyboard,
                         )
                     else:
-                        bot.send_message(
+                        delmsg = bot.send_message(
                             chat_id,
                             text,
                             reply_to_message_id=reply_id,
@@ -189,6 +190,12 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                             disable_web_page_preview=True,
                             reply_markup=keyboard,
                         )
+
+                        cleartime = get_clearcmd(chat_id, "notes")
+
+                        if cleartime:
+                            context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
                 else:
                     if setting:
                         ENUM_FUNC_MAP[note.msgtype](
@@ -200,7 +207,7 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                             reply_markup=keyboard,
                         )
                     else:
-                        ENUM_FUNC_MAP[note.msgtype](
+                        delmsg = ENUM_FUNC_MAP[note.msgtype](
                             chat_id,
                             note.file,
                             caption=text,
@@ -208,6 +215,11 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                             parse_mode=parseMode,
                             reply_markup=keyboard,
                         )
+
+                        cleartime = get_clearcmd(chat_id, "notes")
+
+                        if cleartime:
+                            context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
             except BadRequest as excp:
                 if excp.message == "Entity_mention_user_invalid":
@@ -414,7 +426,12 @@ def list_notes(update: Update, context: CallbackContext):
         if setting == True:
             bot.send_message(user.id, msg_pm, parse_mode=ParseMode.MARKDOWN)
         else:
-            update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+            delmsg = update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+
+            cleartime = get_clearcmd(chat_id, "notes")
+
+            if cleartime:
+                context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 def __import_data__(chat_id, data):

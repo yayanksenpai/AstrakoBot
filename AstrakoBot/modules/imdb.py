@@ -1,17 +1,23 @@
 import bs4
 import requests
 import re
+from asyncio import sleep
+
 from telethon.events import NewMessage
 from telethon import events
 from AstrakoBot import telethn
 from telethon import types
 from telethon.tl import functions
+from AstrakoBot.modules.helper_funcs.misc import delete
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 
 langi = "en"
 
 
 @telethn.on(events.NewMessage(pattern="^[!/]imdb(.*)"))
 async def imdb(e):
+    chat = await e.get_chat()
+    chat_id = e.chat_id
 
     try:
         movie_name = e.pattern_match.group(1)
@@ -79,7 +85,7 @@ async def imdb(e):
                 mov_rating = r.strong["title"]
         else:
             mov_rating = "Not available"
-        await e.reply(
+        delmsg = await e.reply(
             "<a href=" + poster + ">&#8203;</a>"
             "<b>Title : </b><code>"
             + mov_title
@@ -105,4 +111,11 @@ async def imdb(e):
             parse_mode="HTML",
         )
     except IndexError:
-        await e.reply("Please enter a valid movie name !")
+        delmsg = await e.reply("Please enter a valid movie name !")
+
+
+    cleartime = get_clearcmd(chat_id, "imdb")
+
+    if cleartime:
+        await sleep(cleartime.time)
+        await delmsg.delete()

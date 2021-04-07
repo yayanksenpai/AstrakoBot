@@ -13,6 +13,8 @@ from telegram.ext import CallbackContext, run_async
 
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
+from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
+from AstrakoBot.modules.helper_funcs.misc import delete
 
 opener = urllib.request.build_opener()
 useragent = "Mozilla/5.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.98 Mobile Safari/537.36"
@@ -118,23 +120,25 @@ def reverse(update: Update, context: CallbackContext):
             imgspage = match["similar_images"]
 
         if guess and imgspage:
-            xx.edit_text(
+            deletion(update, context, xx.edit_text(
                 f"[{guess}]({fetchUrl})\nProcessing...",
                 parse_mode="Markdown",
                 disable_web_page_preview=True,
-            )
+            ))
         else:
-            xx.edit_text("Couldn't find anything.")
+            deletion(update, context, xx.edit_text("Couldn't find anything."))
+
             return
 
         images = scam(imgspage, lim)
         if len(images) == 0:
-            xx.edit_text(
+            deletion(update, context, xx.edit_text(
                 f"[{guess}]({fetchUrl})\n[Visually similar images]({imgspage})"
                 "\nCouldn't fetch any images.",
                 parse_mode="Markdown",
                 disable_web_page_preview=True,
-            )
+            ))
+
             return
 
         imglinks = []
@@ -142,12 +146,12 @@ def reverse(update: Update, context: CallbackContext):
             lmao = InputMediaPhoto(media=str(link))
             imglinks.append(lmao)
 
-        bot.send_media_group(chat_id=chat_id, media=imglinks, reply_to_message_id=rtmid)
-        xx.edit_text(
+        deletion(update, context, xx.reply_media_group(media=imglinks))
+        deletion(update, context, xx.edit_text(
             f"[{guess}]({fetchUrl})\n[Visually similar images]({imgspage})",
             parse_mode="Markdown",
             disable_web_page_preview=True,
-        )
+        ))
     except TelegramError as e:
         print(e)
     except Exception as exception:
@@ -202,6 +206,14 @@ def scam(imgspage, lim):
             break
 
     return imglinks
+
+
+def deletion(update: Update, context: CallbackContext, delmsg):
+    chat = update.effective_chat
+    cleartime = get_clearcmd(chat.id, "reverse")
+
+    if cleartime:
+        context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
 
 REVERSE_HANDLER = DisableAbleCommandHandler(
