@@ -34,8 +34,9 @@ def youtube(update: Update, context: CallbackContext):
 
         buttons = [
             [
-                InlineKeyboardButton("Song", callback_data=f"youtube;audio;{url}"),
-                InlineKeyboardButton("Video", callback_data=f"youtube;video;{url}"),
+                InlineKeyboardButton("🎵", callback_data=f"youtube;audio;{url}"),
+                InlineKeyboardButton("🎥", callback_data=f"youtube;video;{url}"),
+                InlineKeyboardButton("🚫", callback_data=f"youtube;cancel;"""),
             ]
         ]
 
@@ -46,6 +47,7 @@ def youtube(update: Update, context: CallbackContext):
             parse_mode=ParseMode.MARKDOWN,            
             reply_markup = InlineKeyboardMarkup(buttons)
         )
+
     else:
         delmsg = message.reply_text("Specify a song or video"
         )
@@ -54,6 +56,7 @@ def youtube(update: Update, context: CallbackContext):
     
     if cleartime:
         context.dispatcher.run_async(delete, delmsg, cleartime.time)
+
 
 def youtube_callback(update: Update, context: CallbackContext):
     bot = context.bot
@@ -65,77 +68,87 @@ def youtube_callback(update: Update, context: CallbackContext):
     media_type = media[1]
     media_url = media[2]
     
-    if media_type == "audio":    
+    if media_type == "audio":
+        deltext = message.edit_text("Processing song...")
         opts = {
         "format": "bestaudio/best",
         "addmetadata": True,
-        "key": "FFmpegMetadata",
-        "writethumbnail": True,
-        "prefer_ffmpeg": True,
         "geo_bypass": True,
         "nocheckcertificate": True,
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
-                "preferredquality": "192",
+                "preferredquality": "128",
             }
         ],
-        "outtmpl": "%(id)s.mp3",
+        "outtmpl": "%(title)s.%(etx)s",
         "quiet": True,
         "logtostderr": False,
         }
-        
-        codec = "mp3"
 
+        codec = "mp3"
+        
         with YoutubeDL(opts) as rip:
             rip_data = rip.extract_info(media_url)
-            
+
             try:
-                delmsg = message.reply_audio(
-                audio = open(f"{rip_data['id']}.{codec}", "rb"),
-                duration = int(rip_data['duration']),
-                title = str(rip_data['title']),
-                parse_mode = ParseMode.HTML)
+                delmsg = bot.send_audio(
+                    chat_id = chat.id,
+                    audio = open(f"{rip_data['title']}.{codec}", "rb"),
+                    duration = int(rip_data['duration']),
+                    title = str(rip_data['title']),
+                    parse_mode = ParseMode.HTML
+                )
+                context.dispatcher.run_async(delete, deltext, 0)
             except:
                 delmsg = message.reply_text(
                     "Song is too large for processing, or any other error happened. Try again later"
                 )
 
-    else:
+    elif media_type == "video":
+        deltext = message.edit_text("Processing video...")
         opts = {
         "format": "best",
         "addmetadata": True,
-        "key": "FFmpegMetadata",
-        "prefer_ffmpeg": True,
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
-        "outtmpl": "%(id)s.mp4",
-        "logtostderr": False,
+        "postprocessors": [
+            {
+                "key": "FFmpegVideoConvertor", 
+                "preferedformat": "mp4",
+            }
+        ],
+        "outtmpl": "%(title)s.mp4",
         "quiet": True,
+        "logtostderr": False,
         }
 
         codec = "mp4"
 
         with YoutubeDL(opts) as rip:
             rip_data = rip.extract_info(media_url)
-            
+
             try:
-                delmsg = message.reply_video(
-                video = open(f"{rip_data['id']}.{codec}", "rb"),
-                duration = int(rip_data['duration']),
-                caption = rip_data['title'],
-                supports_streaming = True,
-                parse_mode = ParseMode.HTML)
+                delmsg = bot.send_video(
+                    chat_id = chat.id,
+                    video = open(f"{rip_data['title']}.{codec}", "rb"),
+                    duration = int(rip_data['duration']),
+                    caption = rip_data['title'],
+                    supports_streaming = True,
+                    parse_mode = ParseMode.HTML
+                )
+                context.dispatcher.run_async(delete, deltext, 0)
             except:
                 delmsg = message.reply_text(
-                    "Video is too large for processing, or any other error happened. Try again later"
+                    "Song is too large for processing, or any other error happened. Try again later"
                 )
+    else:
+        delmsg = message.edit_text("Canceling...")
+        context.dispatcher.run_async(delete, delmsg, 1)
 
     try:
-        for f in glob.glob("*.mp*"):
-            os.remove(f)
+        os.remove(f"{rip_data['title']}.{codec}")
     except Exception:
         pass
 
