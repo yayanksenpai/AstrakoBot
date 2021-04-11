@@ -27,7 +27,6 @@ api_client = LydiaAI(CoffeeHouseAPI)
 
 
 @user_admin
-@gloggable
 def add_chat(update: Update, context: CallbackContext):
     global api_client
     chat = update.effective_chat
@@ -44,19 +43,11 @@ def add_chat(update: Update, context: CallbackContext):
         expires = str(ses.expires)
         sql.set_ses(chat.id, ses_id, expires)
         msg.reply_text("AI successfully enabled for this chat!")
-        message = (
-            f"<b>{html.escape(chat.title)}:</b>\n"
-            f"#AI_ENABLED\n"
-            f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-        )
-        return message
     else:
         msg.reply_text("AI is already enabled for this chat!")
-        return ""
 
 
 @user_admin
-@gloggable
 def remove_chat(update: Update, context: CallbackContext):
     msg = update.effective_message
     chat = update.effective_chat
@@ -64,16 +55,9 @@ def remove_chat(update: Update, context: CallbackContext):
     is_chat = sql.is_chat(chat.id)
     if not is_chat:
         msg.reply_text("AI isn't enabled here in the first place!")
-        return ""
     else:
         sql.rem_chat(chat.id)
         msg.reply_text("AI disabled successfully!")
-        message = (
-            f"<b>{html.escape(chat.title)}:</b>\n"
-            f"#AI_DISABLED\n"
-            f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-        )
-        return message
 
 
 def check_message(context: CallbackContext, message):
