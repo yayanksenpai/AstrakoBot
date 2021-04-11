@@ -405,11 +405,13 @@ def gbanlist(update: Update, context: CallbackContext):
 
 def check_and_ban(update, user_id, should_message=True):
 
-    chat = update.effective_chat  # type: Optional[Chat]
-    try:
-        sw_ban = sw.get_ban(int(user_id))
-    except:
+    if user_id in WOLVES:
         sw_ban = None
+    else:
+        try:
+            sw_ban = sw.get_ban(int(user_id))
+        except:
+            sw_ban = None
 
     if sw_ban:
         update.effective_chat.kick_member(user_id)
