@@ -18,7 +18,8 @@ from telegram.ext import CallbackContext, CommandHandler, run_async
 def allow_groups(update: Update, context: CallbackContext):
     args = context.args
     if not args:
-        update.effective_message.reply_text(f"Current state: {AstrakoBot.ALLOW_CHATS}")
+        state = "Lockdown is " + "on" if not AstrakoBot.ALLOW_CHATS else "off"
+        update.effective_message.reply_text(f"Current state: {state}")
         return
     if args[0].lower() in ["off", "no"]:
         AstrakoBot.ALLOW_CHATS = True
