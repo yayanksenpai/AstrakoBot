@@ -362,7 +362,7 @@ def ungban(update: Update, context: CallbackContext):
 
     if EVENT_LOGS:
         log.edit_text(
-            log_message + f"\n<b>Chats affected:</b> {ungbanned_chats}",
+            log_message + f"\n<b>Chats affected:</b> <code>{ungbanned_chats}</code>",
             parse_mode=ParseMode.HTML,
         )
     else:
