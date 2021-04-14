@@ -51,9 +51,9 @@ def get_id(update: Update, context: CallbackContext):
             user2 = message.reply_to_message.forward_from
 
             msg.reply_text(
-                f"<b>Telegram ID:</b>,"
-                f"• {html.escape(user2.first_name)} - <code>{user2.id}</code>.\n"
-                f"• {html.escape(user1.first_name)} - <code>{user1.id}</code>.",
+                f"<b>Telegram ID</b>\n"
+                f"• {html.escape(user2.first_name)}: <code>{user2.id}</code>\n"
+                f"• {html.escape(user1.first_name)}: <code>{user1.id}</code>",
                 parse_mode=ParseMode.HTML,
             )
 
@@ -69,12 +69,12 @@ def get_id(update: Update, context: CallbackContext):
 
         if chat.type == "private":
             msg.reply_text(
-                f"Your id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML
+                f"Your id is <code>{chat.id}</code>", parse_mode=ParseMode.HTML
             )
 
         else:
             msg.reply_text(
-                f"This group's id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML
+                f"This group's id is <code>{chat.id}</code>", parse_mode=ParseMode.HTML
             )
 
 
