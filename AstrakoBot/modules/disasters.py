@@ -6,10 +6,10 @@ from typing import Optional
 from AstrakoBot import (
     DEV_USERS,
     OWNER_ID,
-    DRAGONS,
+    SUDO_USERS,
     SUPPORT_CHAT,
-    DEMONS,
-    WOLVES,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     dispatcher,
 )
 from AstrakoBot.modules.helper_funcs.chat_status import (
@@ -74,22 +74,22 @@ def addsudo(update: Update, context: CallbackContext) -> str:
         message.reply_text("Huh? he is more than sudo!")
         return ""
 
-    if user_id in DRAGONS:
+    if user_id in SUDO_USERS:
         message.reply_text("This user is already sudo")
         return ""
 
-    if user_id in DEMONS:
+    if user_id in SUPPORT_USERS:
         rt += "Promoted from support user to sudo"
         data["supports"].remove(user_id)
-        DEMONS.remove(user_id)
+        SUPPORT_USERS.remove(user_id)
 
-    if user_id in WOLVES:
+    if user_id in WHITELIST_USERS:
         rt += "Promoted from whitelist user to sudo"
         data["whitelists"].remove(user_id)
-        WOLVES.remove(user_id)
+        WHITELIST_USERS.remove(user_id)
 
     data["sudos"].append(user_id)
-    DRAGONS.append(user_id)
+    SUDO_USERS.append(user_id)
 
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
@@ -132,22 +132,22 @@ def addsupport(
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
-    if user_id in DRAGONS:
+    if user_id in SUDO_USERS:
         rt += "Demoted from sudo to support user"
         data["sudos"].remove(user_id)
-        DRAGONS.remove(user_id)
+        SUDO_USERS.remove(user_id)
 
-    if user_id in DEMONS:
+    if user_id in SUPPORT_USERS:
         message.reply_text("This user is already sudo")
         return ""
 
-    if user_id in WOLVES:
+    if user_id in WHITELIST_USERS:
         rt += "Promoted from whitelist to support user"
         data["whitelists"].remove(user_id)
-        WOLVES.remove(user_id)
+        WHITELIST_USERS.remove(user_id)
 
     data["supports"].append(user_id)
-    DEMONS.append(user_id)
+    SUPPORT_USERS.append(user_id)
 
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
@@ -187,22 +187,22 @@ def addwhitelist(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
-    if user_id in DRAGONS:
+    if user_id in SUDO_USERS:
         rt += "Demoted from sudo to whitelist user"
         data["sudos"].remove(user_id)
-        DRAGONS.remove(user_id)
+        SUDO_USERS.remove(user_id)
 
-    if user_id in DEMONS:
+    if user_id in SUPPORT_USERS:
         rt += "Demoted from support user to whitelist user"
         data["supports"].remove(user_id)
-        DEMONS.remove(user_id)
+        SUPPORT_USERS.remove(user_id)
 
-    if user_id in WOLVES:
+    if user_id in WHITELIST_USERS:
         message.reply_text("This user is already a whitelist user")
         return ""
 
     data["whitelists"].append(user_id)
-    WOLVES.append(user_id)
+    WHITELIST_USERS.append(user_id)
 
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
@@ -245,9 +245,9 @@ def removesudo(update: Update, context: CallbackContext) -> str:
         message.reply_text("Huh? he is more than sudo!")
         return ""
 
-    if user_id in DRAGONS:
+    if user_id in SUDO_USERS:
         message.reply_text("Demoted to normal user")
-        DRAGONS.remove(user_id)
+        SUDO_USERS.remove(user_id)
         data["sudos"].remove(user_id)
 
         with open(ELEVATED_USERS_FILE, "w") as outfile:
@@ -287,9 +287,9 @@ def removesupport(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
-    if user_id in DEMONS:
+    if user_id in SUPPORT_USERS:
         message.reply_text("Demoted to normal user")
-        DEMONS.remove(user_id)
+        SUPPORT_USERS.remove(user_id)
         data["supports"].remove(user_id)
 
         with open(ELEVATED_USERS_FILE, "w") as outfile:
@@ -329,9 +329,9 @@ def removewhitelist(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
-    if user_id in WOLVES:
+    if user_id in WHITELIST_USERS:
         message.reply_text("Demoting to normal user")
-        WOLVES.remove(user_id)
+        WHITELIST_USERS.remove(user_id)
         data["whitelists"].remove(user_id)
 
         with open(ELEVATED_USERS_FILE, "w") as outfile:
@@ -357,7 +357,7 @@ def whitelistlist(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
     msg = "<b>Whitelist users:</b>\n"
-    for each_user in WOLVES:
+    for each_user in WHITELIST_USERS:
         user_id = int(each_user)
         try:
             user = bot.get_chat(user_id)
@@ -373,7 +373,7 @@ def supportlist(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
     msg = "<b>Support users:</b>\n"
-    for each_user in DEMONS:
+    for each_user in SUPPORT_USERS:
         user_id = int(each_user)
         try:
             user = bot.get_chat(user_id)
@@ -387,7 +387,7 @@ def supportlist(update: Update, context: CallbackContext):
 def sudolist(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
-    true_sudo = list(set(DRAGONS) - set(DEV_USERS))
+    true_sudo = list(set(SUDO_USERS) - set(DEV_USERS))
     msg = "<b>Sudo users:</b>\n"
     for each_user in true_sudo:
         user_id = int(each_user)

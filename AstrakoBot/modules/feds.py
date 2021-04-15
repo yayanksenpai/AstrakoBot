@@ -12,8 +12,8 @@ from AstrakoBot import (
     LOGGER,
     SUPPORT_CHAT,
     OWNER_ID,
-    DRAGONS,
-    WOLVES,
+    SUDO_USERS,
+    WHITELIST_USERS,
     dispatcher,
 )
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
@@ -242,7 +242,7 @@ def join_fed(update: Update, context: CallbackContext):
     administrators = chat.get_administrators()
     fed_id = sql.get_fed_id(chat.id)
 
-    if user.id in DRAGONS:
+    if user.id in SUDO_USERS:
         pass
     else:
         for admin in administrators:
@@ -305,7 +305,7 @@ def leave_fed(update: Update, context: CallbackContext):
 
     # administrators = chat.get_administrators().status
     getuser = bot.get_chat_member(chat.id, user.id).status
-    if getuser in "creator" or user.id in DRAGONS:
+    if getuser in "creator" or user.id in SUDO_USERS:
         if sql.chat_leave_fed(chat.id) is True:
             get_fedlog = sql.get_fed_log(fed_id)
             if get_fedlog:
@@ -344,7 +344,7 @@ def user_join_fed(update: Update, context: CallbackContext):
 
     fed_id = sql.get_fed_id(chat.id)
 
-    if is_user_fed_owner(fed_id, user.id) or user.id in DRAGONS:
+    if is_user_fed_owner(fed_id, user.id) or user.id in SUDO_USERS:
         user_id = extract_user(msg, args)
         if user_id:
             user = bot.get_chat(user_id)
@@ -600,11 +600,11 @@ def fed_ban(update: Update, context: CallbackContext):
         message.reply_text("God cannot be fed banned!")
         return
 
-    if int(user_id) in DRAGONS:
+    if int(user_id) in SUDO_USERS:
         message.reply_text("Sudo users cannot be fed banned!")
         return
 
-    if int(user_id) in WOLVES:
+    if int(user_id) in WHITELIST_USERS:
         message.reply_text("Whitelist users cannot be fed banned!")
         return
 
@@ -1370,10 +1370,10 @@ def fed_ban_list(update: Update, context: CallbackContext):
                     )
                     return
                 else:
-                    if user.id not in DRAGONS:
+                    if user.id not in SUDO_USERS:
                         put_chat(chat.id, new_jam, chat_data)
             else:
-                if user.id not in DRAGONS:
+                if user.id not in SUDO_USERS:
                     put_chat(chat.id, new_jam, chat_data)
             backups = ""
             for users in getfban:
@@ -1414,10 +1414,10 @@ def fed_ban_list(update: Update, context: CallbackContext):
                     )
                     return
                 else:
-                    if user.id not in DRAGONS:
+                    if user.id not in SUDO_USERS:
                         put_chat(chat.id, new_jam, chat_data)
             else:
-                if user.id not in DRAGONS:
+                if user.id not in SUDO_USERS:
                     put_chat(chat.id, new_jam, chat_data)
             backups = "id,firstname,lastname,username,reason\n"
             for users in getfban:
@@ -1479,10 +1479,10 @@ def fed_ban_list(update: Update, context: CallbackContext):
                 )
                 return
             else:
-                if user.id not in DRAGONS:
+                if user.id not in SUDO_USERS:
                     put_chat(chat.id, new_jam, chat_data)
         else:
-            if user.id not in DRAGONS:
+            if user.id not in SUDO_USERS:
                 put_chat(chat.id, new_jam, chat_data)
         cleanr = re.compile("<.*?>")
         cleantext = re.sub(cleanr, "", text)
@@ -1638,10 +1638,10 @@ def fed_import_bans(update: Update, context: CallbackContext):
                 )
                 return
             else:
-                if user.id not in DRAGONS:
+                if user.id not in SUDO_USERS:
                     put_chat(chat.id, new_jam, chat_data)
         else:
-            if user.id not in DRAGONS:
+            if user.id not in SUDO_USERS:
                 put_chat(chat.id, new_jam, chat_data)
         # if int(int(msg.reply_to_message.document.file_size)/1024) >= 200:
         # 	msg.reply_text("This file is too big!")
@@ -1698,10 +1698,10 @@ def fed_import_bans(update: Update, context: CallbackContext):
                     if str(import_userid) == str(OWNER_ID):
                         failed += 1
                         continue
-                    if int(import_userid) in DRAGONS:
+                    if int(import_userid) in SUDO_USERS:
                         failed += 1
                         continue
-                    if int(import_userid) in WOLVES:
+                    if int(import_userid) in WHITELIST_USERS:
                         failed += 1
                         continue
                     multi_fed_id.append(fed_id)
@@ -1772,10 +1772,10 @@ def fed_import_bans(update: Update, context: CallbackContext):
                     if str(import_userid) == str(OWNER_ID):
                         failed += 1
                         continue
-                    if int(import_userid) in DRAGONS:
+                    if int(import_userid) in SUDO_USERS:
                         failed += 1
                         continue
-                    if int(import_userid) in WOLVES:
+                    if int(import_userid) in WHITELIST_USERS:
                         failed += 1
                         continue
                     multi_fed_id.append(fed_id)

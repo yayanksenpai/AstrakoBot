@@ -4,7 +4,7 @@ import re
 
 from telegram import Message, Chat, Update, User, ChatPermissions
 
-from AstrakoBot import WOLVES, dispatcher
+from AstrakoBot import WHITELIST_USERS, dispatcher
 from AstrakoBot.modules.helper_funcs.chat_status import (
     bot_admin,
     is_user_admin,
@@ -40,7 +40,7 @@ def check_flood(update: Update, context: CallbackContext) -> str:
         return ""
 
     # ignore admins and whitelists
-    if is_user_admin(chat, user.id) or user.id in WOLVES:
+    if is_user_admin(chat, user.id) or user.id in WHITELIST_USERS:
         sql.update_flood(chat.id, None)
         return ""
     # ignore approved users

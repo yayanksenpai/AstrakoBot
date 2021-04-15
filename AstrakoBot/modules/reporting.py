@@ -1,6 +1,6 @@
 import html
 
-from AstrakoBot import LOGGER, DRAGONS, WOLVES, dispatcher
+from AstrakoBot import LOGGER, SUDO_USERS, WHITELIST_USERS, dispatcher
 from AstrakoBot.modules.helper_funcs.chat_status import user_admin, user_not_admin
 from AstrakoBot.modules.log_channel import loggable
 from AstrakoBot.modules.sql import reporting_sql as sql
@@ -17,7 +17,7 @@ from telegram.ext import (
 from telegram.utils.helpers import mention_html
 
 REPORT_GROUP = 12
-REPORT_IMMUNE_USERS = DRAGONS + WOLVES
+REPORT_IMMUNE_USERS = SUDO_USERS + WHITELIST_USERS
 
 
 @user_admin

@@ -4,9 +4,9 @@ import AstrakoBot.modules.sql.blacklistusers_sql as sql
 from AstrakoBot import (
     DEV_USERS,
     OWNER_ID,
-    DRAGONS,
-    DEMONS,
-    WOLVES,
+    SUDO_USERS,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     dispatcher,
 )
 from AstrakoBot.modules.helper_funcs.chat_status import dev_plus
@@ -20,7 +20,7 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler, run_async
 from telegram.utils.helpers import mention_html
 
-BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS + WOLVES + DEMONS
+BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + SUDO_USERS + WHITELIST_USERS + SUPPORT_USERS
 BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 
@@ -140,7 +140,7 @@ def __user_info__(user_id):
         return ""
     if user_id == dispatcher.bot.id:
         return ""
-    if int(user_id) in DRAGONS:
+    if int(user_id) in SUDO_USERS:
         return ""
     if is_blacklisted:
         text = text.format("Yes")

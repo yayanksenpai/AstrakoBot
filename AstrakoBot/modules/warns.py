@@ -3,7 +3,7 @@ import re
 from typing import Optional
 
 import telegram
-from AstrakoBot import WOLVES, dispatcher
+from AstrakoBot import WHITELIST_USERS, dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.helper_funcs.chat_status import (
     bot_admin,
@@ -58,7 +58,7 @@ def warn(
         # message.reply_text("Damn admins, They are too far to be One Punched!")
         return
 
-    if user.id in WOLVES:
+    if user.id in WHITELIST_USERS:
         if warner:
             message.reply_text("Whitelit users are warn immune.")
         else:

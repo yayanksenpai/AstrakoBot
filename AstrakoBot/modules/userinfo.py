@@ -16,9 +16,9 @@ from telegram.utils.helpers import escape_markdown, mention_html
 from AstrakoBot import (
     DEV_USERS,
     OWNER_ID,
-    DRAGONS,
-    DEMONS,
-    WOLVES,
+    SUDO_USERS,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     INFOPIC,
     dispatcher,
     sw,
@@ -33,7 +33,7 @@ from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from AstrakoBot.modules.helper_funcs.chat_status import sudo_plus
 from AstrakoBot.modules.helper_funcs.extraction import extract_user
 from AstrakoBot.modules.helper_funcs.misc import delete
-from AstrakoBot import telethn as AstrakoBotTelethonClient, DRAGONS, DEMONS
+from AstrakoBot import telethn as AstrakoBotTelethonClient, SUDO_USERS, SUPPORT_USERS
 
 
 def get_id(update: Update, context: CallbackContext):
@@ -79,7 +79,7 @@ def get_id(update: Update, context: CallbackContext):
 
 
 @AstrakoBotTelethonClient.on(
-    events.NewMessage(pattern="/ginfo ", from_users=(DRAGONS or []) + (DEMONS or []))
+    events.NewMessage(pattern="/ginfo ", from_users=(SUDO_USERS or []) + (SUPPORT_USERS or []))
 )
 async def group_info(event) -> None:
     chat = event.text.split(" ", 1)[1]
@@ -209,13 +209,13 @@ def info(update: Update, context: CallbackContext):
     elif user.id in DEV_USERS:
         text += "\n\nUser level: <b>developer</b>"
         disaster_level_present = True
-    elif user.id in DRAGONS:
+    elif user.id in SUDO_USERS:
         text += "\n\nUser level: <b>sudo</b>"
         disaster_level_present = True
-    elif user.id in DEMONS:
+    elif user.id in SUPPORT_USERS:
         text += "\n\nUser level: <b>support</b>"
         disaster_level_present = True
-    elif user.id in WOLVES:
+    elif user.id in WHITELIST_USERS:
         text += "\n\nUser level: <b>whitelist</b>"
         disaster_level_present = True
 

@@ -1,6 +1,6 @@
 import html
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
-from AstrakoBot import dispatcher, DRAGONS
+from AstrakoBot import dispatcher, SUDO_USERS
 from AstrakoBot.modules.helper_funcs.extraction import extract_user
 from telegram.ext import CallbackContext, run_async, CallbackQueryHandler
 import AstrakoBot.modules.sql.approve_sql as sql
@@ -136,7 +136,7 @@ def unapproveall(update: Update, context: CallbackContext):
     chat = update.effective_chat
     user = update.effective_user
     member = chat.get_member(user.id)
-    if member.status != "creator" and user.id not in DRAGONS:
+    if member.status != "creator" and user.id not in SUDO_USERS:
         update.effective_message.reply_text(
             "Only the chat owner can unapprove all users at once."
         )
@@ -168,7 +168,7 @@ def unapproveall_btn(update: Update, context: CallbackContext):
     message = update.effective_message
     member = chat.get_member(query.from_user.id)
     if query.data == "unapproveall_user":
-        if member.status == "creator" or query.from_user.id in DRAGONS:
+        if member.status == "creator" or query.from_user.id in SUDO_USERS:
             approved_users = sql.list_approved(chat.id)
             users = [int(i.user_id) for i in approved_users]
             for user_id in users:
@@ -180,7 +180,7 @@ def unapproveall_btn(update: Update, context: CallbackContext):
         if member.status == "member":
             query.answer("You need to be admin to do this.")
     elif query.data == "unapproveall_cancel":
-        if member.status == "creator" or query.from_user.id in DRAGONS:
+        if member.status == "creator" or query.from_user.id in SUDO_USERS:
             message.edit_text("Removing of all approved users has been cancelled.")
             return ""
         if member.status == "administrator":

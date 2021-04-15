@@ -21,11 +21,11 @@ from AstrakoBot import (
     EVENT_LOGS,
     OWNER_ID,
     STRICT_GBAN,
-    DRAGONS,
+    SUDO_USERS,
     SUPPORT_CHAT,
     SPAMWATCH_SUPPORT_CHAT,
-    DEMONS,
-    WOLVES,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     sw,
     dispatcher,
 )
@@ -91,19 +91,19 @@ def gban(update: Update, context: CallbackContext):
         message.reply_text("This is a developer user\nI can't act against our own.")
         return
 
-    if int(user_id) in DRAGONS:
+    if int(user_id) in SUDO_USERS:
         message.reply_text(
             "I spy, with my little eye... a sudo user! Why are you guys turning on each other?"
         )
         return
 
-    if int(user_id) in DEMONS:
+    if int(user_id) in SUPPORT_USERS:
         message.reply_text(
             "OOOH someone's trying to gban a support user! *grabs popcorn*"
         )
         return
 
-    if int(user_id) in WOLVES:
+    if int(user_id) in WHITELIST_USERS:
         message.reply_text("That's a whitelist user! They cannot be banned!")
         return
 
@@ -193,7 +193,7 @@ def gban(update: Update, context: CallbackContext):
             )
 
     else:
-        send_to_list(bot, DRAGONS + DEMONS, log_message, html=True)
+        send_to_list(bot, SUDO_USERS + SUPPORT_USERS, log_message, html=True)
 
     sql.gban_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -224,7 +224,7 @@ def gban(update: Update, context: CallbackContext):
                     )
                 else:
                     send_to_list(
-                        bot, DRAGONS + DEMONS, f"Could not gban due to: {excp.message}"
+                        bot, SUDO_USERS + SUPPORT_USERS, f"Could not gban due to: {excp.message}"
                     )
                 sql.ungban_user(user_id)
                 return
@@ -239,7 +239,7 @@ def gban(update: Update, context: CallbackContext):
     else:
         send_to_list(
             bot,
-            DRAGONS + DEMONS,
+            SUDO_USERS + SUPPORT_USERS,
             f"Gban complete! (User banned in <code>{gbanned_chats}</code> chats)",
             html=True,
         )
@@ -321,7 +321,7 @@ def ungban(update: Update, context: CallbackContext):
                 + "\n\nFormatting has been disabled due to an unexpected error.",
             )
     else:
-        send_to_list(bot, DRAGONS + DEMONS, log_message, html=True)
+        send_to_list(bot, SUDO_USERS + SUPPORT_USERS, log_message, html=True)
 
     chats = get_user_com_chats(user_id)
     ungbanned_chats = 0
@@ -366,7 +366,7 @@ def ungban(update: Update, context: CallbackContext):
             parse_mode=ParseMode.HTML,
         )
     else:
-        send_to_list(bot, DRAGONS + DEMONS, "un-gban complete!")
+        send_to_list(bot, SUDO_USERS + SUPPORT_USERS, "un-gban complete!")
 
     end_time = time.time()
     ungban_time = round((end_time - start_time), 2)
@@ -405,7 +405,7 @@ def gbanlist(update: Update, context: CallbackContext):
 
 def check_and_ban(update, user_id, should_message=True):
 
-    if user_id in WOLVES:
+    if user_id in WHITELIST_USERS:
         sw_ban = None
     else:
         try:
@@ -506,7 +506,7 @@ def __user_info__(user_id):
         return ""
     if user_id == dispatcher.bot.id:
         return ""
-    if int(user_id) in DRAGONS + WOLVES:
+    if int(user_id) in SUDO_USERS + WHITELIST_USERS:
         return ""
     if is_gbanned:
         text = text.format("Yes")

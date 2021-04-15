@@ -11,9 +11,9 @@ from AstrakoBot import (
     DEV_USERS,
     LOGGER,
     OWNER_ID,
-    DRAGONS,
-    DEMONS,
-    WOLVES,
+    SUDO_USERS,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     sw,
     dispatcher,
     JOIN_LOGGER,
@@ -221,7 +221,7 @@ def new_member(update: Update, context: CallbackContext):
                 continue
 
             # Welcome Sudos
-            elif new_mem.id in DRAGONS:
+            elif new_mem.id in SUDO_USERS:
                 deletion(update, context, update.effective_message.reply_text(
                     "Huh! A sudo user just joined! Stay Alert!",
                     reply_to_message_id=reply,
@@ -234,7 +234,7 @@ def new_member(update: Update, context: CallbackContext):
                 continue
 
             # Welcome Support
-            elif new_mem.id in DEMONS:
+            elif new_mem.id in SUPPORT_USERS:
                 deletion(update, context, update.effective_message.reply_text(
                     "Huh! A support user just joined!",
                     reply_to_message_id=reply,
@@ -247,7 +247,7 @@ def new_member(update: Update, context: CallbackContext):
                 continue
 
             # Welcome Whitelisted
-            elif new_mem.id in WOLVES:
+            elif new_mem.id in WHITELIST_USERS:
                 deletion(update, context, update.effective_message.reply_text(
                     "Oof! A whitelist user just joined!", reply_to_message_id=reply
                 ))

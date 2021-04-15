@@ -1,6 +1,6 @@
 import AstrakoBot.modules.sql.blacklistusers_sql as sql
 from AstrakoBot import ALLOW_EXCL
-from AstrakoBot import DEV_USERS, DRAGONS, DEMONS, WOLVES
+from AstrakoBot import DEV_USERS, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS
 
 from telegram import Update
 from telegram.ext import CommandHandler, MessageHandler, Filters
@@ -21,7 +21,7 @@ else:
 class AntiSpam:
     def __init__(self):
         self.whitelist = (
-            (DEV_USERS or []) + (DRAGONS or []) + (WOLVES or []) + (DEMONS or [])
+            (DEV_USERS or []) + (SUDO_USERS or []) + (WHITELIST_USERS or []) + (SUPPORT_USERS or [])
         )
         # Values are HIGHLY experimental, its recommended you pay attention to our commits as we will be adjusting the values over time with what suits best.
         Duration.CUSTOM = 15  # Custom duration, 15 seconds

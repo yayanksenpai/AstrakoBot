@@ -5,7 +5,7 @@ import AstrakoBot.modules.helper_funcs.git_api as api
 import AstrakoBot.modules.sql.github_sql as sql
 
 from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
-from AstrakoBot import dispatcher, OWNER_ID, EVENT_LOGS, DRAGONS, DEMONS
+from AstrakoBot import dispatcher, OWNER_ID, EVENT_LOGS, SUDO_USERS, SUPPORT_USERS
 from AstrakoBot.modules.helper_funcs.filters import CustomFilters
 from AstrakoBot.modules.helper_funcs.chat_status import user_admin
 from AstrakoBot.modules.helper_funcs.misc import delete

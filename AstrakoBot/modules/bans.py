@@ -9,9 +9,9 @@ from AstrakoBot import (
     DEV_USERS,
     LOGGER,
     OWNER_ID,
-    DRAGONS,
-    DEMONS,
-    WOLVES,
+    SUDO_USERS,
+    SUPPORT_USERS,
+    WHITELIST_USERS,
     dispatcher,
 )
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
@@ -65,13 +65,13 @@ def ban(update: Update, context: CallbackContext) -> str:
             message.reply_text("Trying to put me against God huh?")
         elif user_id in DEV_USERS:
             message.reply_text("I can't act against our own.")
-        elif user_id in DRAGONS:
+        elif user_id in SUDO_USERS:
             message.reply_text(
                 "Fighting this sudo user here will put users lives at risk."
             )
-        elif user_id in DEMONS:
+        elif user_id in SUPPORT_USERS:
             message.reply_text("Bring a developer user to fight a support user.")
-        elif user_id in WOLVES:
+        elif user_id in WHITELIST_USERS:
             message.reply_text("Whitelist users cannot be banned.")
         else:
             message.reply_text("This user has immunity and cannot be banned.")
@@ -349,7 +349,7 @@ def selfunban(context: CallbackContext, update: Update) -> str:
     message = update.effective_message
     user = update.effective_user
     bot, args = context.bot, context.args
-    if user.id not in DRAGONS:
+    if user.id not in SUDO_USERS:
         return
 
     try:

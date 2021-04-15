@@ -5,7 +5,7 @@ from typing import Optional
 
 import AstrakoBot.modules.sql.notes_sql as sql
 from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
-from AstrakoBot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, dispatcher, DRAGONS
+from AstrakoBot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, dispatcher, SUDO_USERS
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.helper_funcs.handlers import MessageHandlerChecker
 from AstrakoBot.modules.helper_funcs.chat_status import user_admin, connection_status
@@ -341,7 +341,7 @@ def clearall(update: Update, context: CallbackContext):
     chat = update.effective_chat
     user = update.effective_user
     member = chat.get_member(user.id)
-    if member.status != "creator" and user.id not in DRAGONS:
+    if member.status != "creator" and user.id not in SUDO_USERS:
         update.effective_message.reply_text(
             "Only the chat owner can clear all notes at once."
         )
@@ -369,7 +369,7 @@ def clearall_btn(update: Update, context: CallbackContext):
     message = update.effective_message
     member = chat.get_member(query.from_user.id)
     if query.data == "notes_rmall":
-        if member.status == "creator" or query.from_user.id in DRAGONS:
+        if member.status == "creator" or query.from_user.id in SUDO_USERS:
             note_list = sql.get_all_chat_notes(chat.id)
             try:
                 for notename in note_list:
@@ -385,7 +385,7 @@ def clearall_btn(update: Update, context: CallbackContext):
         if member.status == "member":
             query.answer("You need to be admin to do this.")
     elif query.data == "notes_cancel":
-        if member.status == "creator" or query.from_user.id in DRAGONS:
+        if member.status == "creator" or query.from_user.id in SUDO_USERS:
             message.edit_text("Clearing of all notes has been cancelled.")
             return
         if member.status == "administrator":
