@@ -13,6 +13,7 @@ def totranslate(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
     problem_lang_code = []
+    text = ""
     for key in LANGUAGES:
         if "-" in key:
             problem_lang_code.append(key)
