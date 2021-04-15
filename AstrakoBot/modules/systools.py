@@ -8,12 +8,13 @@ import sys
 import traceback
 import psutil
 import platform
+import sqlalchemy
 import AstrakoBot.modules.helper_funcs.git_api as git
 
 from datetime import datetime
 from platform import python_version, uname
-from telethon import version
-from telegram import Update, Bot, Message, Chat, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
+from telethon import version as tlthn
+from telegram import Update, Bot, Message, Chat, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, version as pybot
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.error import BadRequest, Unauthorized
@@ -111,9 +112,11 @@ def status(update: Update, context: CallbackContext):
     query = update.callback_query
 
     msg = "*Bot information*\n"
-    msg += f"Python version: `{python_version()}`\n"
-    msg += f"Telethon version: `{version.__version__}`\n"
-    msg += f"GitHub API version: `{str(git.vercheck())}`\n"
+    msg += f"Python: `{python_version()}`\n"
+    msg += f"Python Tg Bot: `{pybot.__version__}`\n"
+    msg += f"Telethon: `{tlthn.__version__}`\n"
+    msg += f"SQLAlchemy: `{sqlalchemy.__version__}`\n"
+    msg += f"GitHub API: `{str(git.vercheck())}`\n"
     uptime = get_readable_time((time.time() - StartTime))
     msg += f"Uptime: `{uptime}`\n\n"
     uname = platform.uname()
