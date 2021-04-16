@@ -24,6 +24,7 @@ def get_tz(con):
 
 def weather(update: Update, context: CallbackContext):
     bot = context.bot
+    chat = update.effective_chat
     message = update.effective_message
     city = message.text[len("/weather ") :]
 
