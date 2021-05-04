@@ -46,13 +46,13 @@ def allow_connections(update: Update, context: CallbackContext) -> str:
             if get_settings:
                 send_message(
                     update.effective_message,
-                    "Connections to this group are *Allowed* for members!",
+                    "Connections to this group are *Allowed* for admins!",
                     parse_mode=ParseMode.MARKDOWN,
                 )
             else:
                 send_message(
                     update.effective_message,
-                    "Connection to this group are *Not Allowed* for members!",
+                    "Connection to this group are *Not Allowed* for admins!",
                     parse_mode=ParseMode.MARKDOWN,
                 )
     else:
@@ -115,16 +115,15 @@ def connect_chat(update: Update, context: CallbackContext):
                 return
 
             isadmin = getstatusadmin.status in ("administrator", "creator")
-            ismember = getstatusadmin.status in ("member")
             isallow = sql.allow_connect_to_chat(connect_chat)
 
-            if (isadmin) or (isallow and ismember) or (user.id in SUDO_USERS):
+            if (isadmin and isallow) or (user.id in SUDO_USERS):
                 connection_status = sql.connect(
                     update.effective_message.from_user.id, connect_chat
                 )
                 if connection_status:
                     conn_chat = dispatcher.bot.getChat(
-                        connected(context.bot, update, chat, user.id, need_admin=False)
+                        connected(context.bot, update, chat, user.id, need_admin=True)
                     )
                     chat_name = conn_chat.title
                     send_message(
@@ -139,7 +138,7 @@ def connect_chat(update: Update, context: CallbackContext):
                     send_message(update.effective_message, "Connection failed!")
             else:
                 send_message(
-                    update.effective_message, "Connection to this chat is not allowed!"
+                    update.effective_message, "You are not allowed to connect to this chat!"
                 )
         else:
             gethistory = sql.get_history_conn(user.id)
@@ -154,7 +153,7 @@ def connect_chat(update: Update, context: CallbackContext):
                 ]
             else:
                 buttons = []
-            conn = connected(context.bot, update, chat, user.id, need_admin=False)
+            conn = connected(context.bot, update, chat, user.id, need_admin=True)
             if conn:
                 connectedchat = dispatcher.bot.getChat(conn)
                 text = "You are currently connected to *{}* (`{}`)".format(
@@ -211,9 +210,8 @@ def connect_chat(update: Update, context: CallbackContext):
             chat.id, update.effective_message.from_user.id
         )
         isadmin = getstatusadmin.status in ("administrator", "creator")
-        ismember = getstatusadmin.status in ("member")
         isallow = sql.allow_connect_to_chat(chat.id)
-        if (isadmin) or (isallow and ismember) or (user.id in SUDO_USERS):
+        if (isadmin and isallow) or (user.id in SUDO_USERS):
             connection_status = sql.connect(
                 update.effective_message.from_user.id, chat.id
             )
@@ -241,7 +239,7 @@ def connect_chat(update: Update, context: CallbackContext):
                 send_message(update.effective_message, "Connection failed!")
         else:
             send_message(
-                update.effective_message, "Connection to this chat is not allowed!"
+                update.effective_message, "You are not allowed to connect to this chat!"
             )
 
 
@@ -269,12 +267,10 @@ def connected(bot: Bot, update: Update, chat, user_id, need_admin=True):
             conn_id, update.effective_message.from_user.id
         )
         isadmin = getstatusadmin.status in ("administrator", "creator")
-        ismember = getstatusadmin.status in ("member")
         isallow = sql.allow_connect_to_chat(conn_id)
 
         if (
-            (isadmin)
-            or (isallow and ismember)
+            (isadmin and isallow)
             or (user.id in SUDO_USERS)
             or (user.id in DEV_USERS)
         ):
@@ -341,15 +337,14 @@ def connect_button(update: Update, context: CallbackContext):
         target_chat = connect_match.group(1)
         getstatusadmin = context.bot.get_chat_member(target_chat, query.from_user.id)
         isadmin = getstatusadmin.status in ("administrator", "creator")
-        ismember = getstatusadmin.status in ("member")
         isallow = sql.allow_connect_to_chat(target_chat)
 
-        if (isadmin) or (isallow and ismember) or (user.id in SUDO_USERS):
+        if (isadmin and isallow) or (user.id in SUDO_USERS):
             connection_status = sql.connect(query.from_user.id, target_chat)
 
             if connection_status:
                 conn_chat = dispatcher.bot.getChat(
-                    connected(context.bot, update, chat, user.id, need_admin=False)
+                    connected(context.bot, update, chat, user.id, need_admin=True)
                 )
                 chat_name = conn_chat.title
                 query.message.edit_text(
@@ -363,7 +358,7 @@ def connect_button(update: Update, context: CallbackContext):
                 query.message.edit_text("Connection failed!")
         else:
             context.bot.answer_callback_query(
-                query.id, "Connection to this chat is not allowed!", show_alert=True
+                query.id, "You are not allowed to connect to this chat!", show_alert=True
             )
     elif disconnect_match:
         disconnection_status = sql.disconnect(query.from_user.id)
