@@ -196,6 +196,26 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                         if cleartime:
                             context.dispatcher.run_async(delete, delmsg, cleartime.time)
 
+                elif note.msgtype in (sql.Types.STICKER, sql.Types.STICKER):
+                    if setting:
+                        ENUM_FUNC_MAP[note.msgtype](
+                            user.id,
+                            note.file,
+                            reply_to_message_id=reply_id,
+                            reply_markup=keyboard,
+                        )
+                    else:
+                        delmsg = ENUM_FUNC_MAP[note.msgtype](
+                            chat_id,
+                            note.file,
+                            reply_to_message_id=reply_id,
+                            reply_markup=keyboard,
+                        )
+
+                        cleartime = get_clearcmd(chat_id, "notes")
+
+                        if cleartime:
+                            context.dispatcher.run_async(delete, delmsg, cleartime.time)
                 else:
                     if setting:
                         ENUM_FUNC_MAP[note.msgtype](
