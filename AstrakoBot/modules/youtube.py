@@ -1,12 +1,13 @@
 import os, glob, json
 
+from datetime import datetime
 from AstrakoBot.modules.sql.clear_cmd_sql import get_clearcmd
 from telegram import Bot, Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, run_async
 from AstrakoBot import dispatcher
 from AstrakoBot.modules.disable import DisableAbleCommandHandler
 from AstrakoBot.modules.helper_funcs.misc import delete
-from youtubesearchpython import SearchVideos
+from youtubesearchpython import VideosSearch
 
 from youtube_dl import YoutubeDL
 
@@ -17,20 +18,16 @@ def youtube(update: Update, context: CallbackContext):
     chat = update.effective_chat
     yt = message.text[len("/youtube ") :]
     if yt:
-        search = SearchVideos(yt, offset=1, mode="json", max_results=1)
-        test = search.result()
-        
+        search = VideosSearch(yt, limit=1)
+        result = search.result()
+
         try:
-            p = json.loads(test)
+            url = result["result"][0]["link"]
+            title = result["result"][0]["title"]
         except:
             return message.reply_text(
-                "Failed to find song or video", 
-                parse_mode = ParseMode.MARKDOWN
+                "Failed to find song or video",
             )
-        
-        q = p.get("search_result")
-        url = q[0]["link"]
-        title = q[0]["title"]
 
         buttons = [
             [
@@ -90,20 +87,25 @@ def youtube_callback(update: Update, context: CallbackContext):
         codec = "mp3"
         
         with YoutubeDL(opts) as rip:
-            rip_data = rip.extract_info(media_url)
-
-            try:
-                delmsg = bot.send_audio(
-                    chat_id = chat.id,
-                    audio = open(f"{rip_data['title']}.{codec}", "rb"),
-                    duration = int(rip_data['duration']),
-                    title = str(rip_data['title']),
-                    parse_mode = ParseMode.HTML
-                )
-                context.dispatcher.run_async(delete, deltext, 0)
-            except:
+            rip_data = rip.extract_info(media_url, download=False, process=False)
+            if int(rip_data['duration'] / 60) < 10:
+                try:
+                    rip_data = rip.extract_info(media_url)
+                    delmsg = bot.send_audio(
+                        chat_id = chat.id,
+                        audio = open(f"{rip_data['title']}.{codec}", "rb"),
+                        duration = int(rip_data['duration']),
+                        title = str(rip_data['title']),
+                        parse_mode = ParseMode.HTML
+                    )
+                    context.dispatcher.run_async(delete, deltext, 0)
+                except:
+                    delmsg = message.edit_text(
+                        "Song is too large for processing, or any other error happened. Try again later"
+                    )
+            else:
                 delmsg = message.edit_text(
-                    "Song is too large for processing, or any other error happened. Try again later"
+                    "Song is too large for processing. Duration is limited to 10 minutes max"
                 )
 
     elif media_type == "video":
@@ -127,21 +129,26 @@ def youtube_callback(update: Update, context: CallbackContext):
         codec = "mp4"
 
         with YoutubeDL(opts) as rip:
-            rip_data = rip.extract_info(media_url)
-
-            try:
-                delmsg = bot.send_video(
-                    chat_id = chat.id,
-                    video = open(f"{rip_data['title']}.{codec}", "rb"),
-                    duration = int(rip_data['duration']),
-                    caption = rip_data['title'],
-                    supports_streaming = True,
-                    parse_mode = ParseMode.HTML
-                )
-                context.dispatcher.run_async(delete, deltext, 0)
-            except:
+            rip_data = rip.extract_info(media_url, download=False, process=False)
+            if int(rip_data['duration'] / 60) < 10:
+                try:
+                    rip_data = rip.extract_info(media_url)
+                    delmsg = bot.send_video(
+                        chat_id = chat.id,
+                        video = open(f"{rip_data['title']}.{codec}", "rb"),
+                        duration = int(rip_data['duration']),
+                        caption = rip_data['title'],
+                        supports_streaming = True,
+                        parse_mode = ParseMode.HTML
+                    )
+                    context.dispatcher.run_async(delete, deltext, 0)
+                except:
+                    delmsg = message.edit_text(
+                        "Video is too large for processing, or any other error happened. Try again later"
+                    )
+            else:
                 delmsg = message.edit_text(
-                    "Video is too large for processing, or any other error happened. Try again later"
+                    "Video is too large for processing. Duration is limited to 10 minutes max"
                 )
     else:
         delmsg = message.edit_text("Canceling...")
