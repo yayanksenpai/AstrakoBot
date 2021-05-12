@@ -21,22 +21,17 @@ from AstrakoBot.modules.helper_funcs.misc import delete
 def magisk(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
-    link = "https://raw.githubusercontent.com/topjohnwu/magisk_files/"
+    link = "https://raw.githubusercontent.com/topjohnwu/magisk-files/master/"
     magisk_dict = {
-        "*Stable*": "master/stable.json",
-        "\n" "*Canary*": "canary/canary.json",
+        "*Stable*": "stable.json",
+        "\n" "*Canary*": "canary.json",
     }.items()
     msg = "*Latest Magisk Releases:*\n\n"
     for magisk_type, release_url in magisk_dict:
-        if "Canary" in magisk_type:
-            canary = "https://github.com/topjohnwu/magisk_files/raw/canary/"
-        else:
-            canary = ""
         data = get(link + release_url).json()
         msg += (
             f"{magisk_type}:\n"
-            f'• Manager - [{data["app"]["version"]} ({data["app"]["versionCode"]})]({canary + data["app"]["link"]}) \n'
-            f'• Uninstaller - [Uninstaller {data["magisk"]["version"]} ({data["magisk"]["versionCode"]})]({canary + data["uninstaller"]["link"]}) \n'
+            f'• Manager - [{data["magisk"]["version"]} ({data["magisk"]["versionCode"]})]({data["magisk"]["link"]}) \n'
         )
 
     delmsg = message.reply_text(
