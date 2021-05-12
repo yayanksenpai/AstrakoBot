@@ -32,7 +32,6 @@ def magisk(update: Update, context: CallbackContext):
         msg += (
             f"{magisk_type}:\n"
             f'• Manager - [{data["app"]["version"]} ({data["app"]["versionCode"]})]({data["app"]["link"]}) \n'
-            f'• Uninstaller - [Uninstaller {data["magisk"]["version"]} ({data["magisk"]["versionCode"]})]({data["uninstaller"]["link"]}) \n'
         )
 
     delmsg = message.reply_text(
