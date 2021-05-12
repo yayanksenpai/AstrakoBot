@@ -31,7 +31,7 @@ def magisk(update: Update, context: CallbackContext):
         data = get(link + release_url).json()
         msg += (
             f"{magisk_type}:\n"
-            f'• Manager - [{data["app"]["version"]} ({data["app"]["versionCode"]})]({data["app"]["link"]}) \n'
+            f'• Manager - [{data["magisk"]["version"]} ({data["app"]["versionCode"]})]({data["app"]["link"]}) \n'
         )
 
     delmsg = message.reply_text(
