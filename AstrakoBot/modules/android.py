@@ -21,10 +21,10 @@ from AstrakoBot.modules.helper_funcs.misc import delete
 def magisk(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
-    link = "https://raw.githubusercontent.com/topjohnwu/magisk-files/"
+    link = "https://raw.githubusercontent.com/topjohnwu/magisk-files/master/"
     magisk_dict = {
-        "*Stable*": "master/stable.json",
-        "\n" "*Canary*": "canary/canary.json",
+        "*Stable*": "stable.json",
+        "\n" "*Canary*": "canary.json",
     }.items()
     msg = "*Latest Magisk Releases:*\n\n"
     for magisk_type, release_url in magisk_dict:
